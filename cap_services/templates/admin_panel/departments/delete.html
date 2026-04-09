@@ -1,0 +1,135 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Delete Department - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <h1 class="admin-page-title">Delete Department</h1>
+    <p class="admin-page-subtitle">Confirm department deletion</p>
+</div>
+
+<div class="admin-danger-zone">
+    <div class="admin-danger-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Danger Zone</h4>
+    </div>
+    <div class="admin-danger-content">
+        <p>Are you sure you want to delete the department <strong>"{{ department.name }}"</strong>?</p>
+        <p class="text-warning">This action cannot be undone. Staff assigned to this department will lose their department association.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="admin-danger-buttons">
+                <button type="submit" class="admin-btn-danger">
+                    <i class="fas fa-trash"></i> Yes, Delete Department
+                </button>
+                <a href="{% url 'admin_panel:department_list' %}" class="admin-btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.admin-page-header {
+    margin-bottom: 28px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+}
+.admin-danger-zone {
+    background: #1a1c23;
+    border: 1px solid #ef4444;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.admin-danger-header {
+    background: rgba(239, 68, 68, 0.1);
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.admin-danger-header i {
+    color: #ef4444;
+    font-size: 18px;
+}
+.admin-danger-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ef4444;
+    margin: 0;
+}
+.admin-danger-content {
+    padding: 24px;
+}
+.admin-danger-content p {
+    margin-bottom: 16px;
+    color: #e5e7eb;
+}
+.text-warning {
+    color: #fbbf24;
+    font-size: 13px;
+}
+.admin-danger-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+.admin-btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 10px 24px;
+    border-radius: 10px;
+    color: #f87171;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.admin-btn-danger:hover {
+    background: #ef4444;
+    color: white;
+}
+.admin-btn-secondary {
+    background: #2a2a30;
+    color: #e5e7eb;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.admin-btn-secondary:hover {
+    background: #3a3a40;
+}
+@media (max-width: 768px) {
+    .admin-danger-buttons {
+        flex-direction: column;
+    }
+    .admin-btn-danger,
+    .admin-btn-secondary {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

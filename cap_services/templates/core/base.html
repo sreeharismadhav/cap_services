@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+{% load static %}
+{% load core_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }} - Computer Sales & Services{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-wrapper">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-logo">CAP</div>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-content">
+                <div class="contact-info">
+                    <span><i class="fas fa-phone"></i> {{ site_phone }}</span>
+                    <span><i class="fas fa-envelope"></i> {{ site_email }}</span>
+                    <span><i class="fas fa-clock"></i> Mon-Sat: 9AM - 8PM</span>
+                </div>
+                <div class="user-actions">
+                    {% if request.session.user_id %}
+                        <span class="top-link"><i class="fas fa-user"></i> {{ request.session.user_email }}</span>
+                        <a href="{% url 'accounts:logout' %}" class="top-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="top-link"><i class="fas fa-user"></i> Login</a>
+                        <a href="{% url 'accounts:register' %}" class="top-link"><i class="fas fa-user-plus"></i> Register</a>
+                    {% endif %}
+                    <a href="#" class="top-link"><i class="fas fa-headset"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="{% url 'core:home' %}" class="logo">
+                    <span class="logo-text">CAP</span>
+                    <span class="logo-accent">Services</span>
+                </a>
+
+                <div class="search-wrapper">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <form action="{% url 'store:search' %}" method="get" style="flex: 1; display: flex;">
+                            <input type="text" name="q" placeholder="Search for computers, accessories, services..." value="{{ search_query|default:'' }}">
+                            <button type="submit" class="search-btn">Search</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+    <div class="action-item" id="accountDropdown">
+        <button class="account-btn" onclick="toggleDropdown()">
+            <i class="fas fa-user-circle"></i>
+            <span>Account</span>
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="dropdown-menu" id="dropdownMenu">
+            {% if request.session.user_id %}
+                {% if request.session.user_role == 'ADMIN' %}
+                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                    <a href="{% url 'admin_panel:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <hr>
+                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% elif request.session.user_role == 'STAFF' %}
+                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                    <a href="{% url 'staff:dashboard_redirect' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{% url 'staff:services_list' %}"><i class="fas fa-tasks"></i> Services</a>
+                    <hr>
+                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% else %}
+                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                    <a href="{% url 'orders:order_list' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+                    <a href="{% url 'store:my_bookings' %}"><i class="fas fa-tools"></i> My Bookings</a>
+                    <a href="#"><i class="fas fa-heart"></i> Wishlist</a>
+                    <hr>
+                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus"></i> Register</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if request.session.user_role == "CUSTOMER" %}
+    <div class="action-item">
+        <i class="fas fa-heart"></i>
+        <span>Wishlist</span>
+        <span class="badge wishlist-badge">0</span>
+    </div>
+    <a href="{% url 'orders:cart_detail' %}" class="action-item cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Cart</span>
+        <span class="badge cart-badge">{{ cart_count }}</span>
+    </a>
+    {% endif %}
+</div>
+
+<style>
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: #1f1f1f;
+}
+
+.action-item:hover {
+    background: #f1f5f9;
+}
+
+.action-item.cart {
+    background: #2A6FB0;
+    color: white;
+}
+
+.action-item.cart:hover {
+    background: #1e4a76;
+}
+
+.account-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    color: inherit;
+    width: 100%;
+}
+
+.badge {
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    color: #1f1f1f;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background: #f8fafc;
+}
+
+.dropdown-menu hr {
+    margin: 4px 0;
+    border-color: #eef2f6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .action-item span {
+        display: none;
+    }
+    
+    .action-item {
+        padding: 8px 12px;
+    }
+    
+    .dropdown-menu {
+        right: -20px;
+        min-width: 180px;
+    }
+}
+</style>
+
+<script>
+function toggleDropdown() {
+    const dropdown = document.getElementById('dropdownMenu');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('dropdownMenu');
+    const button = document.querySelector('.account-btn');
+    const accountItem = document.getElementById('accountDropdown');
+    
+    if (accountItem && !accountItem.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Prevent dropdown from closing when clicking inside
+document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+</script>
+
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="{% url 'store:product_list' %}">Products</a>
+                <a href="{% url 'core:home' %}#services">Services</a>
+                <a href="#">Support</a>
+                <hr>
+                {% if not request.session.user_id %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                    <a href="{% url 'accounts:register' %}">Sign Up</a>
+                {% else %}
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
+                    <a href="{% url 'orders:order_list' %}">Orders</a>
+                    <a href="{% url 'store:my_bookings' %}">My Bookings</a>
+                    <a href="{% url 'accounts:logout' %}">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Navigation -->
+    <nav class="category-nav">
+        <div class="container">
+            <ul class="category-nav-list">
+                <li><a href="{% url 'store:category' 'computers' %}"><i class="fas fa-desktop"></i> Computers</a></li>
+                <li><a href="{% url 'store:category' 'laptops' %}"><i class="fas fa-laptop"></i> Laptops</a></li>
+                <li><a href="{% url 'store:category' 'printers' %}"><i class="fas fa-print"></i> Printers</a></li>
+                <li><a href="{% url 'store:category' 'accessories' %}"><i class="fas fa-mouse"></i> Accessories</a></li>
+                <li><a href="{% url 'store:category' 'cctv' %}"><i class="fas fa-video"></i> CCTV</a></li>
+                <li><a href="{% url 'core:home' %}#services"><i class="fas fa-tools"></i> Services</a></li>
+                <li class="has-submenu">
+                    <a href="#"><i class="fas fa-ellipsis-h"></i> More <i class="fas fa-chevron-down"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{% url 'store:category' 'ram-storage' %}">RAM & Storage</a></li>
+                        <li><a href="{% url 'store:category' 'processors' %}">Processors</a></li>
+                        <li><a href="{% url 'store:category' 'motherboards' %}">Motherboards</a></li>
+                        <li><a href="{% url 'store:category' 'networking' %}">Networking</a></li>
+                        <li><a href="{% url 'store:category' 'software' %}">Software</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">CAP</span>
+                        <span class="logo-accent">Services</span>
+                    </div>
+                    <p class="footer-description">
+                        Your trusted partner for computer sales, services, and maintenance.
+                        Quality products, professional service, timely delivery.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Store Locator</a></li>
+                        <li><a href="{% url 'orders:order_list' %}">Track Order</a></li>
+                        <li><a href="{% url 'store:book_service' %}">Book Service</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Shop by Category</h4>
+                    <ul>
+                        <li><a href="{% url 'store:category' 'computers' %}">Computers</a></li>
+                        <li><a href="{% url 'store:category' 'laptops' %}">Laptops</a></li>
+                        <li><a href="{% url 'store:category' 'printers' %}">Printers</a></li>
+                        <li><a href="{% url 'store:category' 'accessories' %}">Accessories</a></li>
+                        <li><a href="{% url 'store:category' 'cctv' %}">CCTV</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-map-marker-alt"></i> Deshabhimani Rd, Kaloor, Kochi</li>
+                        <li><i class="fas fa-phone"></i> {{ site_phone }}</li>
+                        <li><i class="fas fa-envelope"></i> {{ site_email }}</li>
+                        <li><i class="fas fa-clock"></i> Mon-Sat: 9AM - 8PM</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-content">
+                    <p>&copy; {% current_year %} CAP Services. All rights reserved.</p>
+                    <div class="footer-links">
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Refund Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">Your cart is empty</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span class="total-amount" id="cartTotal">₹0</span>
+            </div>
+            <a href="{% url 'orders:checkout' %}" class="btn btn-primary checkout-btn">Checkout</a>
+        </div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Hide loader
+        setTimeout(function() {
+            var loader = document.querySelector('.loader-wrapper');
+            if (loader) loader.classList.add('hidden');
+        }, 500);
+
+        // Sticky navbar shadow
+        window.addEventListener('scroll', function() {
+            var navbar = document.getElementById('navbar');
+            if (navbar) {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            }
+        });
+
+        // Mobile menu toggle
+        var toggle = document.getElementById('mobileToggle');
+        var menu = document.getElementById('mobileMenu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', function() {
+                menu.classList.toggle('show');
+            });
+        }
+
+        // Mobile category dropdown toggle
+        document.querySelectorAll('.has-submenu > a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    var parent = this.parentElement;
+                    parent.classList.toggle('active');
+                }
+            });
+        });
+
+        // Back to top
+        var backBtn = document.getElementById('backToTop');
+        if (backBtn) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backBtn.classList.add('show');
+                } else {
+                    backBtn.classList.remove('show');
+                }
+            });
+            backBtn.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // Cart sidebar
+        var cartIcon = document.getElementById('cartIcon');
+        var cartSidebar = document.getElementById('cartSidebar');
+        var closeCart = document.getElementById('closeCart');
+        var overlay = document.getElementById('overlay');
+
+        if (cartIcon && cartSidebar && closeCart && overlay) {
+            cartIcon.addEventListener('click', function() {
+                cartSidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            function closeCartSidebar() {
+                cartSidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            closeCart.addEventListener('click', closeCartSidebar);
+            overlay.addEventListener('click', closeCartSidebar);
+        }
+    </script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

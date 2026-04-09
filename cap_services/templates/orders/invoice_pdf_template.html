@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice #{{ invoice.invoice_number }}</title>
+    <style>
+        @page {
+            size: a4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2A6FB0;
+        }
+        .invoice-header h1 {
+            color: #2A6FB0;
+            margin: 0;
+            font-size: 28px;
+        }
+        .company-details {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 11px;
+            color: #666;
+        }
+        .invoice-title {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .invoice-title h2 {
+            background: #2A6FB0;
+            color: white;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            width: 48%;
+        }
+        .info-box h4 {
+            color: #2A6FB0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #f5f5f5;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .totals table {
+            width: 300px;
+            margin-left: auto;
+        }
+        .totals td {
+            border: none;
+            padding: 5px;
+        }
+        .grand-total {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2A6FB0;
+        }
+        .invoice-footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-header">
+        <h1>CAP Services</h1>
+    </div>
+    <div class="company-details">
+        {{ company_email }} | {{ company_phone }}
+    </div>
+
+    <div class="invoice-title">
+        <h2>TAX INVOICE</h2>
+    </div>
+
+    <div class="info-section">
+        <div class="info-box">
+            <h4>Invoice Details</h4>
+            <p><strong>Invoice No:</strong> {{ invoice.invoice_number }}</p>
+            <p><strong>Order No:</strong> #{{ order.order_number }}</p>
+            <p><strong>Invoice Date:</strong> {{ invoice.created_at|date:"d M Y" }}</p>
+            <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}</p>
+        </div>
+        <div class="info-box">
+            <h4>Customer Details</h4>
+            <p><strong>{{ order.user.get_full_name|default:order.user.email }}</strong></p>
+            <p>{{ order.user.email }}</p>
+            {% if order.shipping_address %}
+                <p>{{ order.shipping_address.address.address_line1 }}</p>
+                <p>{{ order.shipping_address.address.city }}, {{ order.shipping_address.address.state }} - {{ order.shipping_address.address.pincode }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Unit Price (₹)</th>
+                <th class="text-right">Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.product.name }}</td>
+                <td class="text-right">{{ item.quantity }}</td>
+                <td class="text-right">{{ item.price|floatformat:2 }}</td>
+                <td class="text-right">{{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr><td>Subtotal:</td><td class="text-right">₹{{ order.subtotal|floatformat:2 }}</td></tr>
+            {% if order.discount > 0 %}<tr><td>Discount:</td><td class="text-right">-₹{{ order.discount|floatformat:2 }}</td></tr>{% endif %}
+            <tr><td>Shipping:</td><td class="text-right">₹{{ order.shipping_charge|floatformat:2 }}</td></tr>
+            <tr><td>Tax (GST):</td><td class="text-right">₹{{ order.tax|floatformat:2 }}</td></tr>
+            <tr class="grand-total"><td><strong>Grand Total:</strong></td><td class="text-right"><strong>₹{{ order.total|floatformat:2 }}</strong></td></tr>
+        </table>
+    </div>
+
+    <div class="invoice-footer">
+        <p>Thank you for shopping with CAP Services!</p>
+        <p>For any queries, please contact us at {{ company_email }} or call {{ company_phone }}</p>
+        <p>This is a computer-generated invoice and does not require a physical signature.</p>
+    </div>
+</body>
+</html>

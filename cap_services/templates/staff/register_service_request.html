@@ -1,0 +1,296 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}Register Request{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-color: {{ department.color|default:'#6366f1' }};
+    --primary-light: {{ department.color|default:'#6366f1' }}20;
+}
+
+.page-header {
+    margin-bottom: 28px;
+}
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1f1f1f, #4a4a50);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+}
+.page-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.card-custom {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.card-body-custom {
+    padding: 28px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1f1f1f;
+}
+.form-group label .required {
+    color: #ef4444;
+    margin-left: 4px;
+}
+.form-control, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+}
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+textarea.form-control {
+    resize: vertical;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -12px;
+}
+.col-md-4, .col-md-6 {
+    padding: 0 12px;
+}
+.col-md-4 { width: 33.333%; }
+.col-md-6 { width: 50%; }
+
+h4 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 24px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eef2f6;
+    color: #1f1f1f;
+}
+h4:first-of-type {
+    margin-top: 0;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #eef2f6;
+}
+
+.btn-custom {
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-custom-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+}
+.btn-custom-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+}
+.btn-custom-outline {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+.btn-custom-outline:hover {
+    background: #f8fafc;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Radio/Select styling */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body-custom {
+        padding: 20px;
+    }
+    .col-md-4, .col-md-6 {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 0;
+    }
+    .row {
+        margin: 0;
+        flex-direction: column;
+    }
+    .form-buttons {
+        flex-direction: column;
+    }
+    .btn-custom {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Register New Request</h1>
+    <p>Register a service request or customer complaint</p>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Request Type <span class="required">*</span></label>
+                <select name="request_type" id="requestType" class="form-control" required>
+                    <option value="service">🔧 Service Request</option>
+                    <option value="complaint">📝 Customer Complaint</option>
+                </select>
+            </div>
+            
+            <h4><i class="fas fa-user"></i> Customer Information</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" name="customer_name" class="form-control" placeholder="Enter full name" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="customer_email" class="form-control" placeholder="customer@example.com" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Phone <span class="required">*</span></label>
+                        <input type="tel" name="customer_phone" class="form-control" placeholder="+91 98765 43210" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="serviceFields">
+                <h4><i class="fas fa-laptop"></i> Service Details</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Device Type <span class="required">*</span></label>
+                            <select name="device_type" class="form-control">
+                                <option value="">-- Select Device --</option>
+                                <option value="Laptop">💻 Laptop</option>
+                                <option value="Desktop">🖥️ Desktop</option>
+                                <option value="Printer">🖨️ Printer</option>
+                                <option value="CCTV">📹 CCTV</option>
+                                <option value="UPS">⚡ UPS</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Device Model</label>
+                            <input type="text" name="device_model" class="form-control" placeholder="e.g., Dell Inspiron 15">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Issue Description <span class="required">*</span></label>
+                    <textarea name="issue_description" class="form-control" rows="4" placeholder="Describe the issue in detail..."></textarea>
+                </div>
+            </div>
+            
+            <div id="complaintFields" style="display: none;">
+                <h4><i class="fas fa-exclamation-triangle"></i> Complaint Details</h4>
+                <div class="form-group">
+                    <label>Subject <span class="required">*</span></label>
+                    <input type="text" name="subject" class="form-control" placeholder="Brief subject of complaint">
+                </div>
+                <div class="form-group">
+                    <label>Description <span class="required">*</span></label>
+                    <textarea name="description" class="form-control" rows="5" placeholder="Detailed complaint description..."></textarea>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-paperclip"></i> Additional Notes</label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="Any additional information..."></textarea>
+            </div>
+            
+            <div class="form-buttons">
+                <button type="submit" class="btn-custom btn-custom-primary">
+                    <i class="fas fa-paper-plane"></i> Register Request
+                </button>
+                <a href="javascript:history.back()" class="btn-custom btn-custom-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const requestType = document.getElementById('requestType');
+    const serviceFields = document.getElementById('serviceFields');
+    const complaintFields = document.getElementById('complaintFields');
+    
+    function toggleFields() {
+        if (requestType.value === 'service') {
+            serviceFields.style.display = 'block';
+            complaintFields.style.display = 'none';
+            // Make service fields required
+            document.querySelector('select[name="device_type"]').required = true;
+            document.querySelector('textarea[name="issue_description"]').required = true;
+            document.querySelector('input[name="subject"]').required = false;
+            document.querySelector('textarea[name="description"]').required = false;
+        } else {
+            serviceFields.style.display = 'none';
+            complaintFields.style.display = 'block';
+            // Make complaint fields required
+            document.querySelector('select[name="device_type"]').required = false;
+            document.querySelector('textarea[name="issue_description"]').required = false;
+            document.querySelector('input[name="subject"]').required = true;
+            document.querySelector('textarea[name="description"]').required = true;
+        }
+    }
+    
+    requestType.addEventListener('change', toggleFields);
+    toggleFields(); // Initialize on page load
+</script>
+{% endblock %}

@@ -1,0 +1,572 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Reports - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #1a1c23, #14161c);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 20px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        border-color: #6366f1;
+        box-shadow: 0 10px 30px -8px rgba(99, 102, 241, 0.2);
+    }
+    
+    .stat-card h3 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .stat-card p {
+        color: #9ca3af;
+        font-size: 12px;
+        margin: 0;
+    }
+    
+    .filter-bar {
+        background: rgba(26, 28, 35, 0.7);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-bottom: 6px;
+        display: block;
+        font-weight: 500;
+    }
+    
+    .form-select, .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: #1a1c23;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 10px;
+        color: #e5e7eb;
+        font-size: 13px;
+    }
+    
+    .form-select:focus, .form-control:focus {
+        outline: none;
+        border-color: #6366f1;
+    }
+    
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -8px;
+    }
+    
+    .col-md-3 {
+        padding: 0 8px;
+        width: 25%;
+    }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+    }
+    
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+    }
+    
+    .report-table th {
+        padding: 14px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        text-align: left;
+    }
+    
+    .report-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.08);
+        vertical-align: middle;
+    }
+    
+    .report-table tr:hover td {
+        background: rgba(99, 102, 241, 0.03);
+    }
+    
+    .badge-report {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .badge-sales {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+    
+    .badge-inventory {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+    
+    .badge-staff {
+        background: rgba(139, 92, 246, 0.15);
+        color: #a78bfa;
+    }
+    
+    .badge-customer {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+    
+    .badge-financial {
+        background: rgba(236, 72, 153, 0.15);
+        color: #f472b6;
+    }
+    
+    .btn-view {
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: #a5b4fc;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-view:hover {
+        background: #6366f1;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 64px;
+        color: #374151;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h4 {
+        color: white;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+        color: #6b7280;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #1a1c23;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .modal-title {
+        color: white;
+        margin: 0;
+        font-size: 18px;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .modal-close:hover {
+        color: white;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(99, 102, 241, 0.1);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .btn-close-modal {
+        background: transparent;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: #9ca3af;
+        padding: 8px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .btn-close-modal:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: white;
+    }
+    
+    .report-data {
+        background: #0a0c10;
+        padding: 16px;
+        border-radius: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        color: #e5e7eb;
+        white-space: pre-wrap;
+        overflow-x: auto;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .col-md-3 {
+            width: 50%;
+            margin-bottom: 16px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .admin-page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-3 {
+            width: 100%;
+        }
+        
+        .filter-bar {
+            padding: 16px;
+        }
+        
+        /* Mobile card layout for table */
+        .report-table th {
+            display: none;
+        }
+        
+        .report-table tr {
+            display: block;
+            margin-bottom: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 12px;
+        }
+        
+        .report-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.08);
+        }
+        
+        .report-table td:last-child {
+            border-bottom: none;
+        }
+        
+        .report-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #a5b4fc;
+            font-size: 12px;
+            margin-right: 16px;
+            min-width: 120px;
+        }
+        
+        .modal-content {
+            width: 95%;
+            margin: 20px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stat-card h3 {
+            font-size: 24px;
+        }
+        
+        .report-table td {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .report-table td::before {
+            margin-bottom: 4px;
+        }
+        
+        .btn-view {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .modal-footer {
+            flex-direction: column;
+        }
+        
+        .btn-close-modal {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span><i class="fas fa-chart-bar"></i> Reports & Analytics</span>
+    </div>
+    <div class="admin-card-body">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>₹{{ total_sales|default:"0"|floatformat:0 }}</h3>
+                <p>Total Sales (30 days)</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ total_orders|default:"0" }}</h3>
+                <p>Orders (30 days)</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ total_customers|default:"0" }}</h3>
+                <p>Total Customers</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ conversion_rate|default:"0" }}%</h3>
+                <p>Conversion Rate</p>
+            </div>
+        </div>
+        
+        <!-- Generate Report Form -->
+        <div class="filter-bar">
+            <form method="post" action="{% url 'admin_panel:generate_report' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Report Type</label>
+                        <select name="report_type" class="form-select" required>
+                            <option value="SALES">Sales Report</option>
+                            <option value="INVENTORY">Inventory Report</option>
+                            <option value="STAFF">Staff Performance</option>
+                            <option value="CUSTOMER">Customer Analytics</option>
+                            <option value="FINANCIAL">Financial Report</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="period_start" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="period_end" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn-generate">
+                            <i class="fas fa-chart-line"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Recent Reports Table -->
+        <div class="table-wrapper">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Report Type</th>
+                        <th>Title</th>
+                        <th>Period</th>
+                        <th>Generated By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in recent_reports %}
+                    <tr class="report-table-row">
+                        <td data-label="Report Type">
+                            <span class="badge-report 
+                                {% if report.report_type == 'SALES' %}badge-sales
+                                {% elif report.report_type == 'INVENTORY' %}badge-inventory
+                                {% elif report.report_type == 'STAFF' %}badge-staff
+                                {% elif report.report_type == 'CUSTOMER' %}badge-customer
+                                {% else %}badge-financial{% endif %}">
+                                {{ report.get_report_type_display }}
+                            </span>
+                        </td>
+                        <td data-label="Title" style="color: white;">{{ report.title }}</td>
+                        <td data-label="Period" style="color: #9ca3af;">{{ report.period_start|date:"M j, Y" }} - {{ report.period_end|date:"M j, Y" }}</td>
+                        <td data-label="Generated By" style="color: #9ca3af;">{{ report.generated_by.full_name|default:"System" }}</td>
+                        <td data-label="Date" style="color: #9ca3af;">{{ report.created_at|date:"M j, Y H:i" }}</td>
+                        <td data-label="Actions">
+                            <a href="{% url 'admin_panel:report_detail' report.id %}" class="btn-view">
+                                <i class="fas fa-chart-line"></i> View Report
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="report-table-row">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <h4>No Reports Generated Yet</h4>
+                                <p>Generate your first report using the form above</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Report Data Modal -->
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Report Data</h5>
+            <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="reportData" class="report-data">Loading...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function viewReportData(reportId, reportType) {
+        var modal = document.getElementById('reportModal');
+        var dataDiv = document.getElementById('reportData');
+        
+        dataDiv.innerHTML = 'Loading...';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        fetch(`/admin-panel/reports/${reportId}/data/`)
+            .then(response => response.json())
+            .then(data => {
+                dataDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                dataDiv.innerHTML = 'Error loading report data: ' + error;
+            });
+    }
+    
+    function closeModal() {
+        var modal = document.getElementById('reportModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    window.onclick = function(event) {
+        var modal = document.getElementById('reportModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

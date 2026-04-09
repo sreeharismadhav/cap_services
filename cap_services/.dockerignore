@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual Environment
+venv
+env
+ENV
+.env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Project
+db.sqlite3
+*.log
+local_settings.py
+media
+staticfiles
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

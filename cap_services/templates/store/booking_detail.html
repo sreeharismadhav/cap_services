@@ -1,0 +1,478 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Booking Details - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-hero {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2A6FB0 100%);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .page-hero h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-hero p {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin-bottom: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .details-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 40px;
+    }
+    
+    .details-header {
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        padding: 24px 32px;
+        border-bottom: 1px solid #eef2f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .booking-id {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2A6FB0;
+    }
+    
+    .booking-id i {
+        margin-right: 8px;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-requested {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    .status-scheduled {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+    
+    .status-assigned {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+    
+    .status-in_progress {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    .status-completed {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    
+    .status-cancelled {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .details-body {
+        padding: 32px;
+    }
+    
+    .info-section {
+        margin-bottom: 28px;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1f1f1f;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #eef2f6;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-title i {
+        color: #2A6FB0;
+        font-size: 1.1rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 0.95rem;
+        color: #1f1f1f;
+        font-weight: 500;
+    }
+    
+    .issue-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+    
+    .issue-box p {
+        margin: 0;
+        color: #334155;
+        line-height: 1.6;
+    }
+    
+    .address-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 16px;
+        position: relative;
+    }
+    
+    .address-box p {
+        margin: 0 0 5px 0;
+        color: #334155;
+    }
+    
+    .staff-box {
+        background: linear-gradient(135deg, #e8f0fe, #ffffff);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid rgba(42,111,176,0.2);
+    }
+    
+    .staff-avatar {
+        width: 50px;
+        height: 50px;
+        background: #2A6FB0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .staff-avatar i {
+        font-size: 24px;
+        color: white;
+    }
+    
+    .staff-info h6 {
+        margin: 0 0 4px 0;
+        font-weight: 600;
+    }
+    
+    .staff-info p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    
+    .info-alert {
+        background: #e8f0fe;
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin: 24px 0;
+    }
+    
+    .info-alert i {
+        font-size: 1.2rem;
+        color: #2A6FB0;
+        flex-shrink: 0;
+    }
+    
+    .info-alert p {
+        margin: 0;
+        color: #1e3a5f;
+        font-size: 0.9rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-back {
+        flex: 1;
+        padding: 12px;
+        border-radius: 40px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .btn-back:hover {
+        border-color: #2A6FB0;
+        color: #2A6FB0;
+    }
+    
+    .btn-cancel {
+        flex: 1;
+        padding: 12px;
+        border-radius: 40px;
+        background: white;
+        border: 1px solid #dc2626;
+        color: #dc2626;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .btn-cancel:hover {
+        background: #dc2626;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .page-hero {
+            padding: 30px 0;
+        }
+        .page-hero h1 {
+            font-size: 1.5rem;
+        }
+        .details-header {
+            padding: 18px 20px;
+        }
+        .details-body {
+            padding: 20px;
+        }
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero">
+    <div class="container">
+        <div class="text-center">
+            <h1>Booking Details</h1>
+            <p>View complete information about your service request</p>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="details-card">
+                <div class="details-header">
+                    <div class="booking-id">
+                        <i class="fas fa-hashtag"></i> {{ booking.booking_number }}
+                    </div>
+                    <span class="status-badge status-{{ booking.status|lower }}">
+                        <i class="fas {% if booking.status == 'REQUESTED' %}fa-clock{% elif booking.status == 'SCHEDULED' %}fa-calendar-check{% elif booking.status == 'ASSIGNED' %}fa-user-check{% elif booking.status == 'IN_PROGRESS' %}fa-spinner{% elif booking.status == 'COMPLETED' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ booking.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="details-body">
+                    <!-- Device Information -->
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-laptop"></i>
+                            <span>Device Information</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Device Type</span>
+                                <span class="info-value">{{ booking.device_type }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Device Model</span>
+                                <span class="info-value">{{ booking.device_model|default:"Not specified" }}</span>
+                            </div>
+                        </div>
+                        <div class="issue-box">
+                            <div class="info-label mb-2">Issue Description</div>
+                            <p>{{ booking.issue_description }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule -->
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Preferred Schedule</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Preferred Date</span>
+                                <span class="info-value">{{ booking.preferred_date|date:"l, d F Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Preferred Time</span>
+                                <span class="info-value">{{ booking.preferred_time_slot|default:"Any time" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Address -->
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Service Address</span>
+                        </div>
+                        <div class="address-box">
+                            <p>{{ booking.address_line1 }}</p>
+                            {% if booking.address_line2 %}<p>{{ booking.address_line2 }}</p>{% endif %}
+                            <p>{{ booking.city }}, {{ booking.state }} - {{ booking.pincode }}</p>
+                            {% if booking.landmark %}<p><strong>Landmark:</strong> {{ booking.landmark }}</p>{% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Assigned Technician -->
+                    {% if booking.assigned_staff %}
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Assigned Technician</span>
+                        </div>
+                        <div class="staff-box">
+                            <div class="staff-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="staff-info">
+                                <h6>{{ booking.assigned_staff.get_full_name|default:booking.assigned_staff.email }}</h6>
+                                <p><i class="fas fa-phone-alt me-1"></i> Will contact you shortly</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Status Message -->
+                    <div class="info-alert">
+                        <i class="fas fa-info-circle"></i>
+                        <p>
+                            {% if booking.status == 'REQUESTED' %}
+                                <strong>Awaiting Confirmation</strong><br>
+                                Your booking is pending confirmation. Our team will contact you within 24 hours to schedule the service.
+                            {% elif booking.status == 'CONFIRMED' %}
+                                <strong>Booking Confirmed</strong><br>
+                                Your booking has been confirmed. A technician will visit on the scheduled date.
+                            {% elif booking.status == 'ASSIGNED' %}
+                                <strong>Technician Assigned</strong><br>
+                                A technician has been assigned to your request. They will reach out to you shortly.
+                            {% elif booking.status == 'IN_PROGRESS' %}
+                                <strong>Service In Progress</strong><br>
+                                Your service is currently in progress. The technician is working on your device.
+                            {% elif booking.status == 'COMPLETED' %}
+                                <strong>Service Completed</strong><br>
+                                Service has been completed successfully. Thank you for choosing CAP Services!
+                            {% elif booking.status == 'CANCELLED' %}
+                                <strong>Booking Cancelled</strong><br>
+                                This booking has been cancelled. Please contact support if this was a mistake.
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="{% url 'store:my_bookings' %}" class="btn-back">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Bookings
+                        </a>
+                        {% if booking.status == 'REQUESTED' %}
+                        <button class="btn-cancel" onclick="cancelBooking({{ booking.id }})">
+                            <i class="fas fa-times me-2"></i> Cancel Booking
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelBooking(bookingId) {
+    if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        fetch(`/store/booking/${bookingId}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Error cancelling booking. Please try again.');
+            }
+        }).catch(error => {
+            alert('Error: ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Service Details - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .details-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .info-section {
+        margin-bottom: 28px;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-title i {
+        color: #6366f1;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .info-item {
+        background: rgba(26, 28, 35, 0.5);
+        border-radius: 12px;
+        padding: 12px 16px;
+    }
+    
+    .info-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        color: white;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    
+    .full-width {
+        grid-column: span 2;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .status-requested {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-scheduled {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .status-assigned {
+        background: rgba(139, 92, 246, 0.15);
+        color: #a78bfa;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    
+    .status-in_progress {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-completed {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-cancelled {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .address-box {
+        background: rgba(26, 28, 35, 0.5);
+        border-radius: 12px;
+        padding: 16px;
+    }
+    
+    .address-box p {
+        margin: 0 0 5px 0;
+        color: #e5e7eb;
+        font-size: 14px;
+    }
+    
+    .staff-card {
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .staff-avatar {
+        width: 50px;
+        height: 50px;
+        background: #6366f1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .staff-avatar i {
+        font-size: 24px;
+        color: white;
+    }
+    
+    .staff-info h6 {
+        margin: 0 0 4px 0;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .staff-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    
+    .notes-box {
+        background: rgba(26, 28, 35, 0.5);
+        border-radius: 12px;
+        padding: 16px;
+        font-style: italic;
+        color: #9ca3af;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    
+    .btn-edit, .btn-back {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-back {
+        background: transparent;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: #9ca3af;
+    }
+    
+    .btn-back:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        .full-width {
+            grid-column: span 1;
+        }
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5><i class="fas fa-receipt me-2"></i>Service Details</h5>
+        <span class="status-badge status-{{ service.status|lower }}">
+            <i class="fas {% if service.status == 'REQUESTED' %}fa-clock{% elif service.status == 'SCHEDULED' %}fa-calendar-check{% elif service.status == 'ASSIGNED' %}fa-user-check{% elif service.status == 'IN_PROGRESS' %}fa-spinner{% elif service.status == 'COMPLETED' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+            {{ service.get_status_display }}
+        </span>
+    </div>
+    <div class="admin-card-body">
+        <div class="details-container">
+            <!-- Customer Information -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-user"></i>
+                    <span>Customer Information</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Customer Name</div>
+                        <div class="info-value">{{ service.user.full_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ service.user.email }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">{{ service.user.phone|default:"Not provided" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Booking Date</div>
+                        <div class="info-value">{{ service.created_at|date:"d M Y, h:i A" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Device Information -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-laptop"></i>
+                    <span>Device Information</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Device Type</div>
+                        <div class="info-value">{{ service.device_type }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Device Model</div>
+                        <div class="info-value">{{ service.device_model|default:"Not specified" }}</div>
+                    </div>
+                    <div class="info-item full-width">
+                        <div class="info-label">Issue Description</div>
+                        <div class="info-value">{{ service.issue_description }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Schedule -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Schedule</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Preferred Date</div>
+                        <div class="info-value">{{ service.preferred_date|date:"l, d F Y" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Preferred Time</div>
+                        <div class="info-value">{{ service.preferred_time_slot|default:"Any time" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Address -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Service Address</span>
+                </div>
+                <div class="address-box">
+                    <p>{{ service.address_line1 }}</p>
+                    {% if service.address_line2 %}<p>{{ service.address_line2 }}</p>{% endif %}
+                    <p>{{ service.city }}, {{ service.state }} - {{ service.pincode }}</p>
+                    {% if service.landmark %}<p><strong>Landmark:</strong> {{ service.landmark }}</p>{% endif %}
+                </div>
+            </div>
+            
+            <!-- Assigned Staff -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Assigned Staff</span>
+                </div>
+                {% if service.assigned_staff %}
+                <div class="staff-card">
+                    <div class="staff-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="staff-info">
+                        <h6>{{ service.assigned_staff.full_name }}</h6>
+                        <p>{{ service.assigned_staff.email }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="info-item">
+                    <div class="info-value">Not assigned yet</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Cost Information -->
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Cost Information</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Estimated Cost</div>
+                        <div class="info-value">₹{{ service.estimated_cost|default:"0"|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Final Cost</div>
+                        <div class="info-value">₹{{ service.final_cost|default:"Pending"|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Technician Notes -->
+            {% if service.technician_notes %}
+            <div class="info-section">
+                <div class="section-title">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Technician Notes</span>
+                </div>
+                <div class="notes-box">
+                    {{ service.technician_notes }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'admin_panel:service_edit' service.id %}" class="btn-edit">
+                    <i class="fas fa-edit me-2"></i> Edit Service
+                </a>
+                <a href="{% url 'admin_panel:services' %}" class="btn-back">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Services
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

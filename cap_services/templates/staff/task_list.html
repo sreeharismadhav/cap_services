@@ -1,0 +1,134 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}My Tasks - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>My Tasks</h1>
+    <p>Manage your assigned tasks</p>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <a href="?status=pending" class="filter-tab {% if current_filter == 'pending' %}active{% endif %}">Pending</a>
+    <a href="?status=completed" class="filter-tab {% if current_filter == 'completed' %}active{% endif %}">Completed</a>
+    <a href="?status=all" class="filter-tab {% if current_filter == 'all' %}active{% endif %}">All Tasks</a>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom p-0">
+        {% if tasks %}
+            <div class="task-list-full">
+                {% for task in tasks %}
+                    <div class="task-item-full">
+                        <div class="task-info-full">
+                            <div class="task-type">
+                                <span class="badge-custom badge-primary">{{ task.get_task_type_display }}</span>
+                                <span class="task-priority priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+                            </div>
+                            <h4>
+                                {% if task.order %}
+                                    Order #{{ task.order.order_number }}
+                                {% elif task.service %}
+                                    Service #{{ task.service.booking_number }}
+                                {% else %}
+                                    Task #{{ task.id }}
+                                {% endif %}
+                            </h4>
+                            <p><i class="far fa-user"></i> {{ task.customer_name|default:"Customer" }}</p>
+                            <p><i class="far fa-calendar-alt"></i> Assigned: {{ task.assigned_at|date:"M j, Y" }}</p>
+                        </div>
+                        <div class="task-status-full">
+                            <span class="badge-custom badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+                            <a href="{% url 'staff:task_detail' task.id %}" class="btn-custom btn-custom-primary btn-sm">View Details →</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h4>No tasks found</h4>
+                <p>You have no {{ current_filter }} tasks at the moment.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 12px;
+}
+.filter-tab {
+    padding: 8px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.filter-tab:hover {
+    background: #f1f5f9;
+    color: #1f1f1f;
+}
+.filter-tab.active {
+    background: var(--staff-primary);
+    color: white;
+}
+.task-list-full {
+    display: flex;
+    flex-direction: column;
+}
+.task-item-full {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.task-item-full:hover {
+    background: #f8fafc;
+}
+.task-info-full h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 8px 0;
+}
+.task-info-full p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 4px 0;
+}
+.task-type {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.task-status-full {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+@media (max-width: 768px) {
+    .task-item-full {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .task-status-full {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>
+{% endblock %}

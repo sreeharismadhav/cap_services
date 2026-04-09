@@ -1,0 +1,561 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}System Settings - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">System Settings</h1>
+        <p class="admin-page-subtitle">Configure system-wide settings and preferences</p>
+    </div>
+</div>
+
+<form method="post" action="{% url 'admin_panel:settings' %}">
+    {% csrf_token %}
+    
+    <!-- General Settings -->
+    <div class="admin-form-card">
+        <div class="admin-form-section">
+            <h3 class="admin-section-title">
+                <i class="fas fa-globe"></i> General Settings
+            </h3>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Site Name</label>
+                    <input type="text" name="config_site_name" class="admin-field-input" value="{{ configs.site_name|default:'CAP Services' }}">
+                    <div class="admin-field-hint">Name displayed throughout the site</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Site URL</label>
+                    <input type="url" name="config_site_url" class="admin-field-input" value="{{ configs.site_url|default:'http://localhost:8000' }}">
+                    <div class="admin-field-hint">Your website's base URL</div>
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Contact Email</label>
+                    <input type="email" name="config_site_email" class="admin-field-input" value="{{ configs.site_email|default:'capservicers@gmail.com' }}">
+                    <div class="admin-field-hint">Primary contact email address</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Contact Phone</label>
+                    <input type="text" name="config_site_phone" class="admin-field-input" value="{{ configs.site_phone|default:'7510158899, 9744552007' }}">
+                    <div class="admin-field-hint">Comma-separated phone numbers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Business Settings -->
+    <div class="admin-form-card">
+        <div class="admin-form-section">
+            <h3 class="admin-section-title">
+                <i class="fas fa-building"></i> Business Settings
+            </h3>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">GST Number</label>
+                    <input type="text" name="config_gst_number" class="admin-field-input" value="{{ configs.gst_number|default:'' }}">
+                    <div class="admin-field-hint">GST identification number</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Business Address</label>
+                    <input type="text" name="config_business_address" class="admin-field-input" value="{{ configs.business_address|default:'123, Tech Park, Bangalore' }}">
+                    <div class="admin-field-hint">Registered business address</div>
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Free Delivery Minimum (₹)</label>
+                    <input type="number" name="config_free_delivery_min" class="admin-field-input" value="{{ configs.free_delivery_min|default:'999' }}">
+                    <div class="admin-field-hint">Minimum order amount for free delivery</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Delivery Charge (₹)</label>
+                    <input type="number" name="config_delivery_charge" class="admin-field-input" value="{{ configs.delivery_charge|default:'50' }}">
+                    <div class="admin-field-hint">Standard delivery charge amount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Settings -->
+    <div class="admin-form-card">
+        <div class="admin-form-section">
+            <h3 class="admin-section-title">
+                <i class="fas fa-bell"></i> Notification Settings
+            </h3>
+            
+            <div class="admin-checkbox-group">
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_send_whatsapp" class="admin-checkbox-input" {% if configs.send_whatsapp == 'True' %}checked{% endif %}>
+                    <span><i class="fab fa-whatsapp"></i> Enable WhatsApp Notifications</span>
+                </label>
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_send_sms" class="admin-checkbox-input" {% if configs.send_sms == 'True' %}checked{% endif %}>
+                    <span><i class="fas fa-sms"></i> Enable SMS Notifications</span>
+                </label>
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_send_email" class="admin-checkbox-input" {% if configs.send_email == 'True' %}checked{% endif %}>
+                    <span><i class="fas fa-envelope"></i> Enable Email Notifications</span>
+                </label>
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_order_confirmation" class="admin-checkbox-input" {% if configs.order_confirmation == 'True' %}checked{% endif %}>
+                    <span><i class="fas fa-check-circle"></i> Send Order Confirmation</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Settings -->
+    <div class="admin-form-card">
+        <div class="admin-form-section">
+            <h3 class="admin-section-title">
+                <i class="fas fa-code"></i> API Settings
+            </h3>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">Google Maps API Key</label>
+                    <input type="text" name="config_google_maps_key" class="admin-field-input" value="{{ configs.google_maps_key|default:'' }}">
+                    <div class="admin-field-hint">For location services</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">SMS API Key</label>
+                    <input type="text" name="config_sms_api_key" class="admin-field-input" value="{{ configs.sms_api_key|default:'' }}">
+                    <div class="admin-field-hint">For SMS notifications</div>
+                </div>
+            </div>
+            
+            <div class="admin-form-row">
+                <div class="admin-form-field">
+                    <label class="admin-field-label">WhatsApp API Key</label>
+                    <input type="text" name="config_whatsapp_api_key" class="admin-field-input" value="{{ configs.whatsapp_api_key|default:'' }}">
+                    <div class="admin-field-hint">For WhatsApp notifications</div>
+                </div>
+                <div class="admin-form-field">
+                    <label class="admin-field-label">WhatsApp Phone Number</label>
+                    <input type="text" name="config_whatsapp_phone" class="admin-field-input" value="{{ configs.whatsapp_phone|default:'' }}">
+                    <div class="admin-field-hint">Business WhatsApp number</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Settings -->
+    <div class="admin-form-card">
+        <div class="admin-form-section">
+            <h3 class="admin-section-title">
+                <i class="fas fa-cog"></i> System Settings
+            </h3>
+            
+            <div class="admin-checkbox-group">
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_maintenance_mode" class="admin-checkbox-input" {% if configs.maintenance_mode == 'True' %}checked{% endif %}>
+                    <span><i class="fas fa-tools"></i> Enable Maintenance Mode</span>
+                </label>
+                <label class="admin-checkbox-label">
+                    <input type="checkbox" name="config_allow_registration" class="admin-checkbox-input" {% if configs.allow_registration == 'True' %}checked{% endif %}>
+                    <span><i class="fas fa-user-plus"></i> Allow New Registrations</span>
+                </label>
+            </div>
+            <div class="admin-field-hint">Maintenance mode restricts access to admins only</div>
+        </div>
+    </div>
+    
+    <!-- Warning Alert -->
+    <div class="admin-alert admin-alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>Warning:</strong> Changing these settings may affect system functionality. Please double-check before saving.
+        </div>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="admin-form-footer">
+        <button type="button" class="admin-btn-secondary" onclick="location.reload()">
+            <i class="fas fa-undo"></i> Reset
+        </button>
+        <button type="submit" class="admin-btn-primary">
+            <i class="fas fa-save"></i> Save Settings
+        </button>
+    </div>
+</form>
+
+<!-- Danger Zone -->
+<div class="admin-danger-zone">
+    <div class="admin-danger-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Danger Zone</h4>
+    </div>
+    <div class="admin-danger-content">
+        <div class="admin-danger-item">
+            <div>
+                <h6>Clear All Cache</h6>
+                <p>Clear all cached data to refresh system performance</p>
+            </div>
+            <button class="admin-danger-btn" onclick="clearCache()">
+                <i class="fas fa-trash"></i> Clear Cache
+            </button>
+        </div>
+        <div class="admin-danger-divider"></div>
+        <div class="admin-danger-item">
+            <div>
+                <h6>Clear System Logs</h6>
+                <p>Delete all activity logs older than 30 days</p>
+            </div>
+            <button class="admin-danger-btn" onclick="clearLogs()">
+                <i class="fas fa-eraser"></i> Clear Logs
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function clearCache() {
+    if (confirm('⚠️ Are you sure you want to clear all cache? This may temporarily slow down the site.')) {
+        fetch('{% url "admin_panel:clear_cache" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              showNotification(data.message, data.success ? 'success' : 'error');
+          }).catch(() => {
+              showNotification('An error occurred', 'error');
+          });
+    }
+}
+
+function clearLogs() {
+    if (confirm('⚠️ Are you sure you want to clear old logs? This action cannot be undone.')) {
+        fetch('{% url "admin_panel:clear_logs" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              showNotification(data.message, data.success ? 'success' : 'error');
+          }).catch(() => {
+              showNotification('An error occurred', 'error');
+          });
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 10px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    `;
+    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<style>
+.admin-page-header {
+    margin-bottom: 28px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.admin-form-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.admin-form-section {
+    padding: 24px;
+}
+.admin-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.admin-section-title i {
+    color: #6366f1;
+}
+
+.admin-form-field {
+    margin-bottom: 0;
+}
+.admin-field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+.admin-field-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-field-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
+}
+.admin-field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.admin-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+.admin-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: #e5e7eb;
+    font-size: 14px;
+}
+.admin-checkbox-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #6366f1;
+}
+
+.admin-alert {
+    background: #0f1115;
+    border-left: 4px solid;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.admin-alert i {
+    font-size: 18px;
+    margin-top: 1px;
+}
+.admin-alert-warning {
+    border-left-color: #f59e0b;
+}
+.admin-alert-warning i {
+    color: #f59e0b;
+}
+.admin-alert div {
+    flex: 1;
+    font-size: 13px;
+    color: #e5e7eb;
+    line-height: 1.5;
+}
+.admin-alert strong {
+    font-weight: 600;
+}
+
+.admin-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.admin-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+.admin-btn-secondary {
+    background: #2a2a30;
+    color: #e5e7eb;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-btn-secondary:hover {
+    background: #3a3a40;
+}
+
+.admin-danger-zone {
+    background: #1a1c23;
+    border: 1px solid #ef4444;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 24px;
+}
+.admin-danger-header {
+    background: rgba(239, 68, 68, 0.1);
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.admin-danger-header i {
+    color: #ef4444;
+    font-size: 18px;
+}
+.admin-danger-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ef4444;
+    margin: 0;
+}
+.admin-danger-content {
+    padding: 20px 24px;
+}
+.admin-danger-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-danger-item h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+.admin-danger-item p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}
+.admin-danger-btn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 8px 20px;
+    border-radius: 10px;
+    color: #f87171;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.admin-danger-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+.admin-danger-divider {
+    height: 1px;
+    background: #2a2a30;
+    margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+    .admin-form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .admin-checkbox-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .admin-form-footer {
+        flex-direction: column-reverse;
+    }
+    .admin-btn-primary,
+    .admin-btn-secondary {
+        justify-content: center;
+    }
+    .admin-danger-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-page-title {
+        font-size: 20px;
+    }
+    .admin-form-section {
+        padding: 16px;
+    }
+    .admin-section-title {
+        font-size: 14px;
+    }
+}
+</style>
+{% endblock %}

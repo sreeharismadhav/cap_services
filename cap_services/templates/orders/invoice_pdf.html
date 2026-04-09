@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ invoice.invoice_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            padding: 40px;
+            color: #333;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+        }
+        .header {
+            border-bottom: 2px solid #ffc400;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .logo span {
+            color: #ffc400;
+        }
+        .company-info {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+        }
+        .invoice-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #ffc400;
+        }
+        .details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .details-box {
+            flex: 1;
+        }
+        .details-box h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .details-box p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .totals {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .totals table {
+            width: 300px;
+            margin-left: auto;
+        }
+        .totals td {
+            border: none;
+            padding: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <div class="logo">CAP<span>Services</span></div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">Computer Sales & Services</div>
+                </div>
+                <div class="company-info">
+                    Deshabhimani Rd, Kaloor, Kochi<br>
+                    Phone: 7510158899, 9744552007<br>
+                    Email: capservicers@gmail.com<br>
+                    GST: 29ABCDE1234F1Z5
+                </div>
+            </div>
+        </div>
+        
+        <div class="invoice-title">
+            TAX INVOICE
+        </div>
+        
+        <div class="details">
+            <div class="details-box">
+                <h4>INVOICE DETAILS</h4>
+                <p><strong>Invoice No:</strong> {{ invoice.invoice_number }}</p>
+                <p><strong>Invoice Date:</strong> {{ invoice.created_at|date:"d M Y" }}</p>
+                <p><strong>Order No:</strong> {{ order.order_number }}</p>
+                <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
+            </div>
+            <div class="details-box">
+                <h4>BILL TO</h4>
+                <p><strong>{{ order.user.full_name }}</strong></p>
+                <p>{{ order.shipping_address.address.address_line1 }}</p>
+                {% if order.shipping_address.address.address_line2 %}
+                    <p>{{ order.shipping_address.address.address_line2 }}</p>
+                {% endif %}
+                <p>{{ order.shipping_address.address.city }}, {{ order.shipping_address.address.state }} - {{ order.shipping_address.address.pincode }}</p>
+                <p>Phone: {{ order.user.phone }}</p>
+                <p>Email: {{ order.user.email }}</p>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Quantity</th>
+                    <th>Unit Price (₹)</th>
+                    <th>Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.product.sku }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price|floatformat:2 }}</td>
+                    <td>{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="totals">
+            <table>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td><strong>₹{{ order.subtotal|floatformat:2 }}</strong></td>
+                </tr>
+                {% if order.discount > 0 %}
+                <tr>
+                    <td>Discount:</td>
+                    <td><strong>-₹{{ order.discount|floatformat:2 }}</strong></td>
+                </tr>
+                {% endif %}
+                {% if order.shipping_charge > 0 %}
+                <tr>
+                    <td>Shipping:</td>
+                    <td><strong>₹{{ order.shipping_charge|floatformat:2 }}</strong></td>
+                </tr>
+                {% endif %}
+                {% if order.tax > 0 %}
+                <tr>
+                    <td>Tax (GST):</td>
+                    <td><strong>₹{{ order.tax|floatformat:2 }}</strong></td>
+                </tr>
+                {% endif %}
+                <tr style="border-top: 2px solid #ffc400;">
+                    <td><strong>TOTAL:</strong></td>
+                    <td><strong style="font-size: 18px; color: #ffc400;">₹{{ order.total|floatformat:2 }}</strong></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="details" style="margin-top: 20px;">
+            <div class="details-box">
+                <h4>PAYMENT DETAILS</h4>
+                <p><strong>Payment Status:</strong> 
+                    {% if order.payment_status == 'PAID' %}
+                        <span class="status status-paid">PAID</span>
+                    {% else %}
+                        <span class="status status-pending">{{ order.get_payment_status_display }}</span>
+                    {% endif %}
+                </p>
+                {% if order.payments.first %}
+                    <p><strong>Payment Method:</strong> {{ order.payments.first.get_payment_method_display }}</p>
+                    <p><strong>Transaction ID:</strong> {{ order.payments.first.transaction_id }}</p>
+                    <p><strong>Payment Date:</strong> {{ order.payments.first.payment_date|date:"d M Y H:i" }}</p>
+                {% endif %}
+            </div>
+            <div class="details-box">
+                <h4>DELIVERY DETAILS</h4>
+                <p><strong>Order Status:</strong> {{ order.get_status_display }}</p>
+                {% if order.expected_delivery %}
+                    <p><strong>Expected Delivery:</strong> {{ order.expected_delivery|date:"d M Y" }}</p>
+                {% endif %}
+                {% if order.delivered_at %}
+                    <p><strong>Delivered On:</strong> {{ order.delivered_at|date:"d M Y H:i" }}</p>
+                {% endif %}
+                {% if order.tracking_number %}
+                    <p><strong>Tracking No:</strong> {{ order.tracking_number }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This is a computer generated invoice and does not require physical signature.</p>
+            <p>Thank you for shopping with CAP Services!</p>
+            <p>For any queries, please contact: support@capservices.com | +91 7510158899</p>
+        </div>
+        
+        <div class="no-print" style="text-align: center; margin-top: 30px;">
+            <button onclick="window.print()" style="background: #ffc400; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                <i class="fas fa-print"></i> Print Invoice
+            </button>
+            <button onclick="window.close()" style="background: #6c757d; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: white; margin-left: 10px;">
+                Close
+            </button>
+        </div>
+    </div>
+</body>
+</html>

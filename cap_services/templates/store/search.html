@@ -1,0 +1,534 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Search Results - CAP Services{% endblock %}
+
+{% block content %}
+<!-- Hero Search Banner -->
+<section class="search-hero">
+    <div class="container">
+        <div class="search-hero-content">
+            <h1>Search Results</h1>
+            {% if query %}
+                <p>Showing results for <strong>"{{ query }}"</strong></p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Results Header with Stats -->
+    <div class="search-results-header">
+        <div class="results-stats">
+            <i class="fas fa-search"></i>
+            <span>{{ products.paginator.count|default:0 }} results found</span>
+        </div>
+        {% if query %}
+            <div class="search-query-badge">
+                <span>Search: "{{ query }}"</span>
+                <a href="{% url 'store:product_list' %}" class="clear-search">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Results -->
+    {% if products %}
+        <div class="products-grid-enhanced">
+            {% for product in products %}
+                <div class="product-card-enhanced">
+                    {% if product.discount_percentage > 0 %}
+                        <div class="product-badge-enhanced sale">
+                            <i class="fas fa-tag"></i> -{{ product.discount_percentage }}%
+                        </div>
+                    {% endif %}
+                    {% if product.is_new %}
+                        <div class="product-badge-enhanced new">New</div>
+                    {% endif %}
+                    <div class="product-image-enhanced">
+                        <a href="{% url 'store:product_detail' product.slug %}">
+                            {% with product.images.first as primary_image %}
+                                {% if primary_image %}
+                                    <img src="{{ primary_image.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="{% static 'images/placeholders/product-placeholder.jpg' %}" alt="{{ product.name }}">
+                                {% endif %}
+                            {% endwith %}
+                            <div class="product-quick-view">
+                                <span>Quick View</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="product-info-enhanced">
+                        <div class="product-category-enhanced">
+                            <a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a>
+                        </div>
+                        <h3 class="product-title-enhanced">
+                            <a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a>
+                        </h3>
+                        <div class="product-rating-enhanced">
+                            <div class="stars">
+                                {% with product.average_rating|floatformat:0 as rating %}
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= rating|add:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <span class="rating-count">({{ product.review_count }})</span>
+                        </div>
+                        <div class="product-price-enhanced">
+                            <span class="current-price">₹{{ product.current_price|floatformat:2 }}</span>
+                            {% if product.discounted_price %}
+                                <span class="original-price">₹{{ product.price|floatformat:2 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-actions-enhanced">
+                            <button class="btn-cart add-to-cart" data-product-id="{{ product.id }}">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="btn-wishlist wishlist-btn" data-product-id="{{ product.id }}">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+        <div class="pagination-enhanced">
+            <div class="pagination-info">
+                Showing {{ products.start_index }} to {{ products.end_index }} of {{ products.paginator.count }} results
+            </div>
+            <div class="pagination-links">
+                {% if products.has_previous %}
+                    <a href="?q={{ query }}&page={{ products.previous_page_number }}" class="page-link">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                        <span class="page-current">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <a href="?q={{ query }}&page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if products.has_next %}
+                    <a href="?q={{ query }}&page={{ products.next_page_number }}" class="page-link">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state-enhanced">
+            <div class="empty-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>No products found</h3>
+            <p>We couldn't find any products matching <strong>"{{ query }}"</strong></p>
+            <div class="empty-suggestions">
+                <p>Try searching with different keywords or browse our categories:</p>
+                <div class="category-suggestions">
+                    {% for category in categories|slice:":6" %}
+                        <a href="{% url 'store:category' category.slug %}" class="suggestion-tag">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="{% url 'store:product_list' %}" class="btn-primary-enhanced">
+                <i class="fas fa-shopping-bag"></i> Browse All Products
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* Search Hero */
+.search-hero {
+    background: linear-gradient(135deg, #1a1c23 0%, #0f1115 100%);
+    padding: 60px 0 40px;
+    text-align: center;
+}
+.search-hero-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin-bottom: 12px;
+}
+.search-hero-content p {
+    font-size: 16px;
+    color: #9ca3af;
+}
+.search-hero-content strong {
+    color: #6366f1;
+}
+
+/* Results Header */
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.results-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #9ca3af;
+    font-size: 14px;
+}
+.results-stats i {
+    color: #6366f1;
+    font-size: 16px;
+}
+.search-query-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 30px;
+    padding: 6px 16px;
+}
+.search-query-badge span {
+    color: #a5b4fc;
+    font-size: 13px;
+}
+.clear-search {
+    color: #f87171;
+    text-decoration: none;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.clear-search:hover {
+    color: #ef4444;
+}
+
+/* Products Grid */
+.products-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+/* Product Card */
+.product-card-enhanced {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+}
+.product-card-enhanced:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+.product-badge-enhanced {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 2;
+}
+.product-badge-enhanced.sale {
+    background: #ef4444;
+    color: white;
+}
+.product-badge-enhanced.new {
+    background: #10b981;
+    color: white;
+    left: auto;
+    right: 12px;
+}
+.product-image-enhanced {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f8fafc;
+}
+.product-image-enhanced img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.product-card-enhanced:hover .product-image-enhanced img {
+    transform: scale(1.05);
+}
+.product-quick-view {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7);
+    text-align: center;
+    padding: 12px;
+    transition: bottom 0.3s ease;
+}
+.product-quick-view span {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+}
+.product-card-enhanced:hover .product-quick-view {
+    bottom: 0;
+}
+.product-info-enhanced {
+    padding: 16px;
+}
+.product-category-enhanced a {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6366f1;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+}
+.product-title-enhanced a {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f1f1f;
+    text-decoration: none;
+    margin: 8px 0;
+    display: block;
+    line-height: 1.4;
+}
+.product-title-enhanced a:hover {
+    color: #6366f1;
+}
+.product-rating-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+.product-rating-enhanced .stars {
+    color: #fbbf24;
+    font-size: 12px;
+}
+.rating-count {
+    font-size: 11px;
+    color: #9ca3af;
+}
+.product-price-enhanced {
+    margin: 12px 0;
+}
+.current-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2A6FB0;
+}
+.original-price {
+    font-size: 13px;
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin-left: 8px;
+}
+.product-actions-enhanced {
+    display: flex;
+    gap: 10px;
+}
+.btn-cart {
+    flex: 1;
+    background: #2A6FB0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-cart:hover {
+    background: #1e4a76;
+    transform: translateY(-2px);
+}
+.btn-wishlist {
+    width: 36px;
+    height: 36px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-wishlist:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Pagination */
+.pagination-enhanced {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.pagination-info {
+    font-size: 13px;
+    color: #64748b;
+}
+.pagination-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.page-link {
+    background: #f1f5f9;
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.page-link:hover {
+    background: #e2e8f0;
+}
+.page-current {
+    background: #2A6FB0;
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+}
+
+/* Empty State */
+.empty-state-enhanced {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border-radius: 24px;
+}
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.empty-icon i {
+    font-size: 32px;
+    color: #94a3b8;
+}
+.empty-state-enhanced h3 {
+    font-size: 20px;
+    color: #1f1f1f;
+    margin-bottom: 8px;
+}
+.empty-state-enhanced p {
+    color: #64748b;
+    margin-bottom: 24px;
+}
+.empty-suggestions {
+    max-width: 400px;
+    margin: 0 auto 32px;
+}
+.empty-suggestions p {
+    margin-bottom: 16px;
+}
+.category-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.suggestion-tag {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 6px 16px;
+    border-radius: 30px;
+    color: #2A6FB0;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.suggestion-tag:hover {
+    background: #2A6FB0;
+    color: white;
+    border-color: #2A6FB0;
+}
+.btn-primary-enhanced {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #2A6FB0;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-primary-enhanced:hover {
+    background: #1e4a76;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .products-grid-enhanced {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 992px) {
+    .products-grid-enhanced {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .search-hero {
+        padding: 40px 0 30px;
+    }
+    .search-hero-content h1 {
+        font-size: 28px;
+    }
+    .products-grid-enhanced {
+        grid-template-columns: 1fr;
+    }
+    .search-results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .pagination-enhanced {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

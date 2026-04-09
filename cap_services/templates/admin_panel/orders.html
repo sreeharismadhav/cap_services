@@ -1,0 +1,711 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Order Management - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">Order Management</h1>
+        <p class="admin-page-subtitle">Manage and track customer orders</p>
+    </div>
+    <div class="admin-stats-row">
+        <div class="admin-stat-mini">
+            <div class="admin-stat-mini-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="admin-stat-mini-info">
+                <h3>{{ orders.paginator.count|default:0 }}</h3>
+                <p>Total Orders</p>
+            </div>
+        </div>
+        <div class="admin-stat-mini">
+            <div class="admin-stat-mini-icon"><i class="fas fa-clock"></i></div>
+            <div class="admin-stat-mini-info">
+                <h3>{{ pending_count|default:0 }}</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="admin-stat-mini">
+            <div class="admin-stat-mini-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="admin-stat-mini-info">
+                <h3>{{ completed_count|default:0 }}</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="admin-filters-bar">
+    <form method="get" class="admin-filters-form">
+        <div class="admin-filter-item">
+            <label class="admin-filter-label">Order Status</label>
+            <select name="status" class="admin-filter-select">
+                <option value="">All Status</option>
+                <option value="PLACED" {% if status_filter == 'PLACED' %}selected{% endif %}>Placed</option>
+                <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                <option value="PROCESSING" {% if status_filter == 'PROCESSING' %}selected{% endif %}>Processing</option>
+                <option value="SHIPPED" {% if status_filter == 'SHIPPED' %}selected{% endif %}>Shipped</option>
+                <option value="ASSIGNED" {% if status_filter == 'ASSIGNED' %}selected{% endif %}>Assigned</option>
+                <option value="DELIVERED" {% if status_filter == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        
+        <div class="admin-filter-item">
+            <label class="admin-filter-label">Payment Status</label>
+            <select name="payment" class="admin-filter-select">
+                <option value="">All Payment</option>
+                <option value="PENDING" {% if payment_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                <option value="PAID" {% if payment_filter == 'PAID' %}selected{% endif %}>Paid</option>
+                <option value="FAILED" {% if payment_filter == 'FAILED' %}selected{% endif %}>Failed</option>
+            </select>
+        </div>
+        
+        <div class="admin-filter-item admin-search-item">
+            <label class="admin-filter-label">Search</label>
+            <div class="admin-search-wrapper">
+                <input type="text" name="search" class="admin-search-input" placeholder="Order # or Customer..." value="{{ search }}">
+                <button type="submit" class="admin-search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="admin-filter-actions">
+            {% if search or status_filter or payment_filter %}
+                <a href="{% url 'admin_panel:orders' %}" class="admin-clear-btn">
+                    <i class="fas fa-times"></i> Clear Filters
+                </a>
+            {% endif %}
+            <button type="submit" class="admin-apply-btn">
+                <i class="fas fa-filter"></i> Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Orders Table -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span><i class="fas fa-list"></i> All Orders</span>
+        <span class="admin-card-count">{{ orders.paginator.count }} orders</span>
+    </div>
+    <div class="admin-card-body p-0">
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th style="width: 60px;"></th>
+                    </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr class="admin-table-row">
+                        <td data-label="Order #"><span class="admin-order-id">#{{ order.order_number }}</span></td>
+                        <td data-label="Customer">
+                            <div class="admin-customer-info">
+                                <div class="admin-customer-name">{{ order.user.full_name|default:order.user.email }}</div>
+                                <div class="admin-customer-email">{{ order.user.email }}</div>
+                            </div>
+                        </td>
+                        <td data-label="Date">
+                            <div class="admin-date-info">
+                                {{ order.created_at|date:"M j, Y" }}
+                                <span class="admin-time">{{ order.created_at|time:"g:i A" }}</span>
+                            </div>
+                        </td>
+                        <td data-label="Amount" class="admin-amount">₹{{ order.total|floatformat:2 }}</td>
+                        <td data-label="Payment">
+                            {% if order.payment_status == 'PAID' %}
+                                <span class="admin-badge admin-badge-success">Paid</span>
+                            {% elif order.payment_status == 'FAILED' %}
+                                <span class="admin-badge admin-badge-danger">Failed</span>
+                            {% else %}
+                                <span class="admin-badge admin-badge-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Status">
+                            <select class="admin-status-select" data-order-id="{{ order.id }}">
+                                <option value="PLACED" {% if order.status == 'PLACED' %}selected{% endif %}>Placed</option>
+                                <option value="CONFIRMED" {% if order.status == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                                <option value="PROCESSING" {% if order.status == 'PROCESSING' %}selected{% endif %}>Processing</option>
+                                <option value="SHIPPED" {% if order.status == 'SHIPPED' %}selected{% endif %}>Shipped</option>
+                                <option value="ASSIGNED" {% if order.status == 'ASSIGNED' %}selected{% endif %}>Assigned</option>
+                                <option value="DELIVERED" {% if order.status == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                                <option value="CANCELLED" {% if order.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td data-label="Actions" class="admin-action-cell">
+                            <a href="{% url 'admin_panel:order_detail' order.id %}" class="admin-action-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="admin-table-row">
+                        <td colspan="7" class="admin-empty-cell">
+                            <div class="admin-empty-state">
+                                <i class="fas fa-shopping-cart"></i>
+                                <p>No orders found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if orders.has_other_pages %}
+    <div class="admin-pagination">
+        <div class="admin-pagination-info">
+            Showing <strong>{{ orders.start_index }}</strong> to <strong>{{ orders.end_index }}</strong> of <strong>{{ orders.paginator.count }}</strong> orders
+        </div>
+        <div class="admin-pagination-links">
+            {% if orders.has_previous %}
+                <a href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment={{ payment_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="admin-page-link">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            
+            {% for num in orders.paginator.page_range %}
+                {% if orders.number == num %}
+                    <span class="admin-page-current">{{ num }}</span>
+                {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                    <a href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment={{ payment_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="admin-page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_filter %}&payment={{ payment_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="admin-page-link">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Update order status
+    document.querySelectorAll('.admin-status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.dataset.orderId;
+            const newStatus = this.value;
+            const statusText = this.options[this.selectedIndex].text;
+            
+            if (confirm(`Change order status to ${statusText}?`)) {
+                fetch(`/admin-panel/orders/${orderId}/update-status/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `status=${newStatus}`
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    }
+                });
+            } else {
+                this.value = this.querySelector(`option[value="${newStatus}"]`).value;
+            }
+        });
+    });
+</script>
+
+<style>
+/* Page Header */
+.admin-page-header {
+    margin-bottom: 28px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+    margin: 0;
+}
+.admin-stats-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+.admin-stat-mini {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 140px;
+}
+.admin-stat-mini-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(99,102,241,0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.admin-stat-mini-icon i {
+    font-size: 20px;
+    color: #6366f1;
+}
+.admin-stat-mini-info h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0;
+    line-height: 1.2;
+}
+.admin-stat-mini-info p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Filters */
+.admin-filters-bar {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+.admin-filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+}
+.admin-filter-item {
+    flex: 1;
+    min-width: 160px;
+}
+.admin-filter-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0f1115;
+    border: 1px solid #2a2a30;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+.admin-filter-select:focus {
+    border-color: #6366f1;
+}
+.admin-search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.admin-search-input {
+    flex: 1;
+    padding: 10px 12px;
+    background: #0f1115;
+    border: 1px solid #2a2a30;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 13px;
+    outline: none;
+}
+.admin-search-input:focus {
+    border-color: #6366f1;
+}
+.admin-search-btn {
+    padding: 10px 14px;
+    background: rgba(99,102,241,0.15);
+    border: none;
+    border-radius: 10px;
+    color: #a5b4fc;
+    cursor: pointer;
+    font-size: 14px;
+}
+.admin-search-btn:hover {
+    background: #6366f1;
+    color: white;
+}
+.admin-filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.admin-clear-btn {
+    padding: 10px 16px;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    color: #f87171;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.admin-clear-btn:hover {
+    background: rgba(239,68,68,0.25);
+}
+.admin-apply-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.admin-apply-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+
+/* Card */
+.admin-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.admin-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #2a2a30;
+}
+.admin-card-header span {
+    font-weight: 600;
+    color: #e5e7eb;
+    font-size: 14px;
+}
+.admin-card-count {
+    font-size: 12px;
+    color: #9ca3af;
+    background: rgba(99,102,241,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* Table */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+.admin-table th,
+.admin-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #2a2a30;
+}
+.admin-table th {
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-table-row:hover {
+    background: rgba(99,102,241,0.05);
+}
+.admin-order-id {
+    font-family: monospace;
+    font-size: 13px;
+    color: #a5b4fc;
+}
+.admin-customer-info {
+    line-height: 1.4;
+}
+.admin-customer-name {
+    font-weight: 500;
+    color: #e5e7eb;
+    font-size: 14px;
+}
+.admin-customer-email {
+    font-size: 11px;
+    color: #9ca3af;
+}
+.admin-date-info {
+    line-height: 1.4;
+}
+.admin-time {
+    font-size: 11px;
+    color: #9ca3af;
+    display: block;
+}
+.admin-amount {
+    font-weight: 600;
+    color: #34d399;
+}
+.admin-status-select {
+    background: #0f1115;
+    border: 1px solid #2a2a30;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #e5e7eb;
+    font-size: 12px;
+    cursor: pointer;
+    width: 110px;
+    outline: none;
+}
+.admin-status-select:focus {
+    border-color: #6366f1;
+}
+.admin-action-cell {
+    text-align: center;
+}
+.admin-action-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(99,102,241,0.1);
+    border: none;
+    border-radius: 8px;
+    color: #a5b4fc;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.admin-action-btn:hover {
+    background: #6366f1;
+    color: white;
+}
+
+/* Badges */
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.admin-badge-success {
+    background: rgba(16,185,129,0.15);
+    color: #34d399;
+}
+.admin-badge-danger {
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+}
+.admin-badge-warning {
+    background: rgba(245,158,11,0.15);
+    color: #fbbf24;
+}
+
+/* Pagination */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-top: 1px solid #2a2a30;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.admin-pagination-info {
+    font-size: 13px;
+    color: #9ca3af;
+}
+.admin-pagination-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.admin-page-link {
+    background: rgba(99,102,241,0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #a5b4fc;
+    text-decoration: none;
+    font-size: 12px;
+}
+.admin-page-link:hover {
+    background: #6366f1;
+    color: white;
+}
+.admin-page-current {
+    background: #6366f1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: white;
+    font-size: 12px;
+}
+
+/* Empty State */
+.admin-empty-cell {
+    text-align: center;
+}
+.admin-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+}
+.admin-empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+.admin-empty-state p {
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .admin-filters-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .admin-filter-item {
+        width: 100%;
+    }
+    .admin-filter-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+    .admin-stats-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-page-header {
+        flex-direction: column;
+    }
+    
+    .admin-stats-row {
+        flex-direction: column;
+    }
+    
+    .admin-stat-mini {
+        width: 100%;
+    }
+    
+    .admin-filter-actions {
+        flex-direction: column;
+    }
+    
+    .admin-clear-btn,
+    .admin-apply-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .admin-pagination {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-pagination-links {
+        justify-content: center;
+    }
+    
+    /* Mobile card layout for table */
+    .admin-table th {
+        display: none;
+    }
+    
+    .admin-table tr {
+        display: block;
+        margin-bottom: 16px;
+        border: 1px solid #2a2a30;
+        border-radius: 12px;
+    }
+    
+    .admin-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(99,102,241,0.1);
+    }
+    
+    .admin-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .admin-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #a5b4fc;
+        font-size: 12px;
+        margin-right: 16px;
+    }
+    
+    .admin-status-select {
+        width: auto;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-stat-mini {
+        padding: 12px 16px;
+    }
+    
+    .admin-stat-mini-info h3 {
+        font-size: 20px;
+    }
+    
+    .admin-table td {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .admin-table td::before {
+        margin-bottom: 4px;
+    }
+    
+    .admin-pagination-links {
+        gap: 6px;
+    }
+    
+    .admin-page-link,
+    .admin-page-current {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+}
+</style>
+{% endblock %}

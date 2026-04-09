@@ -1,0 +1,85 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}My Shifts - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>My Shifts</h1>
+    <p>View your shift schedule and attendance</p>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        <div class="shift-info">
+            <h4>Today's Shift</h4>
+            {% if shift %}
+                <div class="shift-details">
+                    <div><strong>Shift Date:</strong> {{ shift.shift_date|date:"F j, Y" }}</div>
+                    <div><strong>Shift Time:</strong> {{ shift.start_time|time:"h:i A" }} - {{ shift.end_time|time:"h:i A" }}</div>
+                    <div><strong>Branch:</strong> {{ shift.branch.name }}</div>
+                    {% if shift.clock_in %}
+                        <div><strong>Clocked In:</strong> {{ shift.clock_in|date:"h:i A" }}</div>
+                    {% endif %}
+                    {% if shift.clock_out %}
+                        <div><strong>Clocked Out:</strong> {{ shift.clock_out|date:"h:i A" }}</div>
+                    {% endif %}
+                </div>
+                <div class="shift-actions">
+                    {% if not shift.clock_in %}
+                        <form method="post" action="{% url 'staff:clock_in' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-custom btn-custom-primary"><i class="fas fa-sign-in-alt"></i> Clock In</button>
+                        </form>
+                    {% elif shift.clock_in and not shift.clock_out %}
+                        <form method="post" action="{% url 'staff:clock_out' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-custom btn-custom-danger"><i class="fas fa-sign-out-alt"></i> Clock Out</button>
+                        </form>
+                    {% else %}
+                        <div class="shift-completed">
+                            <i class="fas fa-check-circle"></i> Shift Completed
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i>
+                    <p>No shift scheduled for today</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.shift-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.shift-actions {
+    margin-top: 20px;
+}
+.shift-completed {
+    color: #16a34a;
+    font-weight: 500;
+}
+.shift-completed i {
+    margin-right: 6px;
+}
+.btn-custom-danger {
+    background: #ef4444;
+    color: white;
+}
+.btn-custom-danger:hover {
+    background: #dc2626;
+}
+@media (max-width: 768px) {
+    .shift-details {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,411 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}{{ department.name }} Dashboard - Staff Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --dept-color: {{ theme_color }};
+    --dept-light: {{ theme_light }};
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--dept-color);
+    transition: all 0.3s;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--dept-light);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+.stat-icon i {
+    font-size: 24px;
+    color: var(--dept-color);
+}
+.stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1f1f1f;
+    margin-bottom: 5px;
+}
+.stat-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+.department-badge {
+    background: var(--dept-light);
+    color: var(--dept-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.task-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    transition: all 0.2s;
+}
+.task-item:hover {
+    border-color: var(--dept-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.task-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.task-info p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+}
+.priority-high {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.priority-medium {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.priority-low {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.shift-card {
+    background: linear-gradient(135deg, var(--dept-color), var(--dept-color)dd);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+.shift-card h4 {
+    margin-bottom: 10px;
+}
+.shift-time {
+    font-size: 24px;
+    font-weight: 700;
+}
+.btn-dept {
+    background: white;
+    color: var(--dept-color);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-dept:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.welcome-section h1 {
+    font-size: 28px;
+    font-weight: 700;
+}
+.btn-new-request {
+    background: var(--dept-color);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.btn-new-request:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <div>
+        <h1>Welcome back, {{ user.first_name|default:user.email }}!</h1>
+        <p>Here's your {{ department.name }} dashboard overview</p>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: right;">
+        <div class="department-badge" style="background: transparent; color: var(--dept-color); border: 1px solid var(--dept-color); align-self: flex-end; align-items: right;">
+            <a href="{% url 'core:home' %}" style="display: inline-flex; align-items: center; gap: 6px; color: var(--dept-color); text-decoration: none; align-items: right;">
+                <i class="fa fa-home"></i>
+                Home
+            </a>
+        </div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center; width: 400px">
+        <div class="department-badge">
+            <i class="{{ department.icon }}"></i>
+            {{ department.name }}
+        </div>
+        {% if department.slug == 'customer-support' %}
+        <a href="{% url 'staff:register_service_request' %}" class="btn-new-request">
+            <i class="fas fa-plus"></i> New Request
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Shift Card -->
+{% if today_shift %}
+<div class="shift-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h4><i class="fas fa-calendar-alt"></i> Today's Shift</h4>
+            <div class="shift-time">
+                {{ today_shift.start_time|time:"h:i A" }} - {{ today_shift.end_time|time:"h:i A" }}
+            </div>
+            {% if today_shift.clock_in and not today_shift.clock_out %}
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-top: 8px;">Clocked In</span>
+            {% elif today_shift.clock_in and today_shift.clock_out %}
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-top: 8px;">Shift Completed</span>
+            {% else %}
+                <span style="display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-top: 8px;">Not Clocked In</span>
+            {% endif %}
+        </div>
+        <div>
+            {% if not today_shift.clock_in %}
+                <form method="post" action="{% url 'staff:clock_in' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-dept"><i class="fas fa-sign-in-alt"></i> Clock In</button>
+                </form>
+            {% elif today_shift.clock_in and not today_shift.clock_out %}
+                <form method="post" action="{% url 'staff:clock_out' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-dept"><i class="fas fa-sign-out-alt"></i> Clock Out</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stat-value">{{ stats.pending }}</div>
+        <div class="stat-label">Pending {{ task_type_name }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-value">{{ stats.completed_today }}</div>
+        <div class="stat-label">Completed Today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-week"></i>
+        </div>
+        <div class="stat-value">{{ stats.total_this_week }}</div>
+        <div class="stat-label">This Week</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-value">{{ stats.avg_rating|floatformat:1 }}</div>
+        <div class="stat-label">Rating</div>
+    </div>
+</div>
+
+<!-- Recent Tasks/Services -->
+<div class="card-custom">
+    <div class="card-header-custom">
+        <h5><i class="fas fa-list"></i> Recent {{ task_type_name }}</h5>
+        <a href="
+            {% if department.slug == 'service-repair' or department.slug == 'technical-support' or department.slug == 'customer-support' %}
+                {% url 'staff:services_list' %}
+            {% else %}
+                {% url 'staff:task_list' %}
+            {% endif %}
+        " class="btn-custom btn-custom-outline">View All</a>
+    </div>
+    <div class="card-body-custom">
+        {% if pending_tasks %}
+            <div class="task-list">
+                {% for task in pending_tasks %}
+                    <div class="task-item">
+                        <div class="task-info">
+                            <h4>
+                                {% if department.slug == 'service-repair' or department.slug == 'technical-support' or department.slug == 'customer-support' %}
+                                    {{ task.device_type }} - {{ task.device_model|default:"No model" }}
+                                {% elif department.slug == 'courier' %}
+                                    Delivery - Order #{{ task.order.order_number|default:"N/A" }}
+                                {% else %}
+                                    {{ task.get_task_type_display|default:"Task" }}
+                                {% endif %}
+                            </h4>
+                            <p>
+                                <i class="far fa-user"></i> 
+                                {% if task.customer_name %}
+                                    {{ task.customer_name }}
+                                {% elif task.user %}
+                                    {{ task.user.full_name }}
+                                {% else %}
+                                    Customer
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            {% if task.priority %}
+                                <span class="priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+                            {% endif %}
+                            <span class="badge-custom badge-warning">{{ task.get_status_display }}</span>
+                        </div>
+                        <a href="
+                            {% if department.slug == 'service-repair' or department.slug == 'technical-support' or department.slug == 'customer-support' %}
+                                {% url 'staff:service_detail' task.id %}
+                            {% else %}
+                                {% url 'staff:task_detail' task.id %}
+                            {% endif %}
+                        " class="btn-custom btn-custom-primary btn-sm">View →</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h4>No pending {{ task_type_name|lower }}</h4>
+                <p>You're all caught up! Great work!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="display: flex; gap: 20px; margin-top: 24px; flex-wrap: wrap;">
+    <div class="card-custom" style="flex: 1; text-align: center;">
+        <div class="card-body-custom">
+            <i class="fas fa-map-marker-alt fa-3x" style="color: var(--dept-color);"></i>
+            <h5 style="margin-top: 16px;">Update Location</h5>
+            <p style="font-size: 12px; color: #64748b;">Share your current location</p>
+            <button class="btn-custom btn-custom-primary" onclick="updateLocation()">
+                <i class="fas fa-location-dot"></i> Share Location
+            </button>
+        </div>
+    </div>
+    <div class="card-custom" style="flex: 1; text-align: center;">
+        <div class="card-body-custom">
+            <i class="fas fa-chart-line fa-3x" style="color: var(--dept-color);"></i>
+            <h5 style="margin-top: 16px;">My Performance</h5>
+            <p style="font-size: 12px; color: #64748b;">View your performance metrics</p>
+            <a href="{% url 'staff:performance' %}" class="btn-custom btn-custom-primary">
+                <i class="fas fa-star"></i> View Stats
+            </a>
+        </div>
+    </div>
+    <div class="card-custom" style="flex: 1; text-align: center;">
+        <div class="card-body-custom">
+            <i class="fas fa-calendar-alt fa-3x" style="color: var(--dept-color);"></i>
+            <h5 style="margin-top: 16px;">My Shifts</h5>
+            <p style="font-size: 12px; color: #64748b;">View your shift schedule</p>
+            <a href="{% url 'staff:shift' %}" class="btn-custom btn-custom-primary">
+                <i class="fas fa-clock"></i> View Shifts
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            fetch("{% url 'staff:update_location' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.status === 'success') {
+                      alert('Location updated successfully');
+                  }
+              });
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+</script>
+
+<style>
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

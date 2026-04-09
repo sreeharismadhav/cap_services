@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CAP Services</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #F5F5F5 0%, #FFFFFF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #E0A52B, #D97A2B);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .auth-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+        
+        .auth-header h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #1F1F1F;
+        }
+        
+        .auth-header p {
+            color: #6B6B7B;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #1F1F1F;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: #F5F5F5;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group:focus-within {
+            border-color: #2A6FB0;
+            box-shadow: 0 0 0 3px rgba(42,111,176,0.1);
+            background: white;
+        }
+        
+        .input-group-text {
+            background: transparent;
+            border: none;
+            padding: 0 16px;
+            color: #8E8E9F;
+        }
+        
+        .form-control {
+            flex: 1;
+            padding: 14px 16px 14px 0;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .auth-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-check-input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #2A6FB0;
+        }
+        
+        .form-check-label {
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .forgot-link {
+            color: #2A6FB0;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-login {
+            width: 100%;
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+        
+        .btn-login:hover {
+            background: #1e4a76;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(42,111,176,0.3);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .auth-footer p {
+            color: #6B6B7B;
+            font-size: 14px;
+        }
+        
+        .register-link {
+            color: #2A6FB0;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .register-link:hover {
+            text-decoration: underline;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #2A6FB0;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(42,111,176,0.1);
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 30px;
+            }
+            
+            .auth-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .auth-icon i {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <button onclick="window.history.back()" class="nav-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <a href="{% url 'core:home' %}" class="nav-btn">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+            
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2>Welcome Back</h2>
+                <p>Login to your CAP Services account</p>
+            </div>
+            
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required autofocus>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                
+                <div class="auth-options">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    <a href="{% url 'accounts:forgot_password' %}" class="forgot-link">Forgot Password?</a>
+                </div>
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{% url 'accounts:register' %}" class="register-link">Create Account</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Hide loader if present
+        setTimeout(function() {
+            var loader = document.querySelector('.loader-wrapper');
+            if (loader) loader.classList.add('hidden');
+        }, 500);
+    </script>
+</body>
+</html>

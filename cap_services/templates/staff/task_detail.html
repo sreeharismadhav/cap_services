@@ -1,0 +1,241 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}Task Details - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Task Details</h1>
+    <p>View and manage this task</p>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        <div class="task-header">
+            <div>
+                <span class="badge-custom badge-primary">{{ task.get_task_type_display }}</span>
+                <span class="task-priority priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+                <span class="badge-custom badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+            </div>
+            <div class="task-actions">
+                {% if task.status == 'ASSIGNED' %}
+                    <form method="post" action="{% url 'staff:task_accept' task.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-custom btn-custom-primary">Accept Task</button>
+                    </form>
+                {% endif %}
+                {% if task.status == 'ACCEPTED' %}
+                    <form method="post" action="{% url 'staff:task_start' task.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-custom btn-custom-primary">Start Task</button>
+                    </form>
+                {% endif %}
+                {% if task.status == 'IN_PROGRESS' %}
+                    <button class="btn-custom btn-custom-primary" onclick="showCompleteModal()">Complete Task</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="task-details">
+            <h4>Task Information</h4>
+            <div class="details-grid">
+                <div><strong>Task ID:</strong> #{{ task.id }}</div>
+                <div><strong>Assigned At:</strong> {{ task.assigned_at|date:"M j, Y H:i" }}</div>
+                {% if task.accepted_at %}<div><strong>Accepted:</strong> {{ task.accepted_at|date:"M j, Y H:i" }}</div>{% endif %}
+                {% if task.started_at %}<div><strong>Started:</strong> {{ task.started_at|date:"M j, Y H:i" }}</div>{% endif %}
+                {% if task.completed_at %}<div><strong>Completed:</strong> {{ task.completed_at|date:"M j, Y H:i" }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="customer-details">
+            <h4>Customer Information</h4>
+            <div class="details-grid">
+                <div><strong>Name:</strong> {{ task.customer_name|default:"N/A" }}</div>
+                <div><strong>Phone:</strong> {{ task.customer_phone|default:"N/A" }}</div>
+                {% if task.customer_address %}
+                    <div><strong>Address:</strong> 
+                        {% if task.customer_address.address_line1 %}
+                            {{ task.customer_address.address_line1 }}, {{ task.customer_address.city }}
+                        {% else %}
+                            {{ task.customer_address }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if task.order %}
+        <div class="order-details">
+            <h4>Order Information</h4>
+            <div class="details-grid">
+                <div><strong>Order Number:</strong> #{{ task.order.order_number }}</div>
+                <div><strong>Total Amount:</strong> ₹{{ task.order.total|floatformat:2 }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if task.service %}
+        <div class="service-details">
+            <h4>Service Information</h4>
+            <div class="details-grid">
+                <div><strong>Booking Number:</strong> #{{ task.service.booking_number }}</div>
+                <div><strong>Device Type:</strong> {{ task.service.device_type }}</div>
+                <div><strong>Device Model:</strong> {{ task.service.device_model|default:"N/A" }}</div>
+                <div><strong>Issue:</strong> {{ task.service.issue_description|truncatechars:100 }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if task.notes %}
+        <div class="notes">
+            <h4>Notes</h4>
+            <p>{{ task.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Complete Task Modal -->
+<div id="completeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Complete Task</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form method="post" action="{% url 'staff:task_complete' task.id %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Completion Notes</label>
+                    <textarea name="notes" class="form-control" rows="4" placeholder="Add notes about this task..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Customer Rating (Optional)</label>
+                    <select name="rating" class="form-control">
+                        <option value="">Select rating</option>
+                        <option value="5">★★★★★ (5)</option>
+                        <option value="4">★★★★☆ (4)</option>
+                        <option value="3">★★★☆☆ (3)</option>
+                        <option value="2">★★☆☆☆ (2)</option>
+                        <option value="1">★☆☆☆☆ (1)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-custom-outline" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-custom btn-custom-primary">Complete Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+.task-details, .customer-details, .order-details, .service-details, .notes {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.task-details:last-child, .customer-details:last-child, .order-details:last-child, .service-details:last-child, .notes:last-child {
+    border-bottom: none;
+}
+h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1f1f1f;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.modal-body {
+    padding: 20px;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+}
+.form-group {
+    margin-bottom: 16px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 13px;
+}
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+    .task-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+<script>
+function showCompleteModal() {
+    document.getElementById('completeModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('completeModal').style.display = 'none';
+}
+</script>
+{% endblock %}

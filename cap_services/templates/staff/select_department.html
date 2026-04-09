@@ -1,0 +1,95 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}Select Department - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header" style="text-align: center;">
+    <h1>Select Your Department</h1>
+    <p>You are assigned to multiple departments. Please select one to continue.</p>
+</div>
+
+<div class="dept-selection-grid">
+    {% for dept in departments %}
+    <a href="{% url 'staff:department_dashboard' dept.slug %}" class="dept-selection-card" style="border-top: 4px solid {{ dept.color }};">
+        <div class="dept-selection-icon" style="background: {{ dept.color }}20; color: {{ dept.color }};">
+            <i class="{{ dept.icon }}"></i>
+        </div>
+        <h3>{{ dept.name }}</h3>
+        <p>{{ dept.description|truncatechars:80 }}</p>
+        <span class="dept-select-btn" style="background: {{ dept.color }};">Select →</span>
+    </a>
+    {% endfor %}
+</div>
+
+<style>
+.page-header {
+    margin-bottom: 32px;
+}
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.page-header p {
+    color: #64748b;
+}
+.dept-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.dept-selection-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: block;
+}
+.dept-selection-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.dept-selection-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.dept-selection-icon i {
+    font-size: 36px;
+}
+.dept-selection-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin-bottom: 10px;
+}
+.dept-selection-card p {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.dept-select-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 25px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+.dept-selection-card:hover .dept-select-btn {
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}

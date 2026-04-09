@@ -1,0 +1,289 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Payment - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .payment-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .payment-header {
+        padding: 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid #eef2f6;
+        background: #fafbfc;
+    }
+    .payment-header i {
+        font-size: 3rem;
+        color: #2A6FB0;
+    }
+    .payment-header h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .payment-body {
+        padding: 1.5rem;
+    }
+    .amount-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .amount-box .amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2A6FB0;
+    }
+    .qr-container {
+        text-align: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        border: 1px solid #eef2f6;
+    }
+    .qr-container img {
+        max-width: 220px;
+        height: auto;
+        margin: 0 auto;
+    }
+    .upi-id-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    .upi-id {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2A6FB0;
+        background: white;
+        padding: 0.75rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        word-break: break-all;
+    }
+    .copy-btn, .pay-btn {
+        background: #2A6FB0;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 40px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+    .copy-btn:hover, .pay-btn:hover {
+        background: #1e4a76;
+        transform: translateY(-2px);
+    }
+    .success-msg {
+        background: #10b981;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        display: none;
+    }
+    .instruction {
+        background: #e8f0fe;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+    }
+    .instruction ol {
+        margin: 0.5rem 0 0 1rem;
+        padding-left: 0;
+    }
+    .instruction li {
+        margin-bottom: 0.5rem;
+    }
+    .btn-verify {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.9rem;
+        border-radius: 40px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 1rem;
+        cursor: pointer;
+    }
+    .btn-verify:hover {
+        background: #059669;
+    }
+    .regenerate-btn {
+        background: none;
+        border: none;
+        color: #2A6FB0;
+        font-size: 0.75rem;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="payment-container">
+        <div class="payment-card">
+            <div class="payment-header">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Complete Payment</h3>
+                <p class="text-muted">Order #{{ order.order_number }}</p>
+            </div>
+            
+            <div class="payment-body">
+                <div class="amount-box">
+                    <div class="amount">₹{{ amount|floatformat:2 }}</div>
+                </div>
+                
+                <!-- QR Code -->
+                <div class="qr-container">
+                    {% if qr_code %}
+                        <img src="{{ qr_code }}" alt="UPI QR Code">
+                    {% else %}
+                        <div style="padding: 2rem; background: #f8fafc; border-radius: 12px;">
+                            <i class="fas fa-qrcode" style="font-size: 3rem; color: #64748b;"></i>
+                            <p>QR code not available</p>
+                        </div>
+                    {% endif %}
+                    <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                        <i class="fas fa-qrcode"></i> Scan with any UPI app
+                    </p>
+                </div>
+                
+                <!-- UPI ID with Copy -->
+                <div class="upi-id-box">
+                    <div style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.5rem;">OR PAY TO THIS UPI ID</div>
+                    <div class="upi-id">
+                        {{ upi_id }}
+                    </div>
+                    <button class="copy-btn" onclick="copyUPIID()">
+                        <i class="fas fa-copy"></i> Copy UPI ID
+                    </button>
+                    <div id="copySuccess" class="success-msg">✓ Copied!</div>
+                </div>
+                
+                <!-- Simple Instructions -->
+                <div class="instruction">
+                    <i class="fas fa-info-circle"></i> How to pay:
+                    <ol>
+                        <li>Open <strong>Google Pay / PhonePe / Paytm</strong></li>
+                        <li>Scan QR code <strong>OR</strong> click "Pay to UPI ID"</li>
+                        <li>Enter amount: <strong>₹{{ amount|floatformat:2 }}</strong></li>
+                        <li>Make payment</li>
+                    </ol>
+                </div>
+                
+                <!-- After Payment Button -->
+                <button class="btn-verify" onclick="showPaymentVerification()">
+                    <i class="fas fa-check-circle"></i> I have completed the payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Simple Verification Modal -->
+<div id="verifyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 20px; max-width: 350px; width: 90%; padding: 1.5rem; text-align: center;">
+        <i class="fas fa-receipt" style="font-size: 3rem; color: #2A6FB0;"></i>
+        <h4 style="margin: 1rem 0;">Confirm Payment</h4>
+        <p>Enter the Transaction ID from your UPI app</p>
+        <input type="text" id="transactionId" placeholder="Transaction ID / UTR" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; margin: 1rem 0;">
+        <button onclick="submitVerification()" style="background: #2A6FB0; color: white; border: none; padding: 0.75rem; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer;">Verify Payment</button>
+        <button onclick="closeModal()" style="background: none; border: none; color: #64748b; margin-top: 1rem; cursor: pointer;">Cancel</button>
+    </div>
+</div>
+
+<form id="paymentForm" method="post" action="{% url 'orders:payment_verify' %}">
+    {% csrf_token %}
+    <input type="hidden" name="payment_id" id="payment_id">
+    <input type="hidden" name="transaction_id" id="hidden_transaction_id">
+    <input type="hidden" name="upi_id" id="upi_id_input">
+</form>
+
+<script>
+    let paymentId = null;
+    
+    // Initialize payment
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('{% url "orders:payment_initiate" order.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                paymentId = data.payment_id;
+                document.getElementById('payment_id').value = paymentId;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    
+    function copyUPIID() {
+        let upiId = '{{ upi_id }}';
+        navigator.clipboard.writeText(upiId);
+        let successMsg = document.getElementById('copySuccess');
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 2000);
+    }
+    
+    function showPaymentVerification() {
+        if (!paymentId) {
+            alert('Please wait, initializing payment...');
+            return;
+        }
+        document.getElementById('verifyModal').style.display = 'flex';
+    }
+    
+    function submitVerification() {
+        let transactionId = document.getElementById('transactionId').value.trim();
+        
+        if (!transactionId) {
+            alert('Please enter the Transaction ID');
+            return;
+        }
+        
+        document.getElementById('hidden_transaction_id').value = transactionId;
+        document.getElementById('paymentForm').submit();
+    }
+    
+    function closeModal() {
+        document.getElementById('verifyModal').style.display = 'none';
+        document.getElementById('transactionId').value = '';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        let modal = document.getElementById('verifyModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

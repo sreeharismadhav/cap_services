@@ -1,0 +1,763 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}User Details - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">User Details</h1>
+        <p class="admin-page-subtitle">View complete user information</p>
+    </div>
+    <div>
+        <a href="{% url 'admin_panel:users' %}" class="admin-back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+    </div>
+</div>
+
+<div class="admin-user-detail">
+    <!-- User Header Card -->
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <div class="admin-user-header">
+                <div class="admin-user-avatar-large">
+                    {% if user_obj.profile.profile_pic %}
+                        <img src="{{ user_obj.profile.profile_pic.url }}" alt="{{ user_obj.full_name }}">
+                    {% else %}
+                        <i class="fas fa-user-circle"></i>
+                    {% endif %}
+                </div>
+                <div class="admin-user-header-info">
+                    <h2>{{ user_obj.full_name|default:user_obj.email }}</h2>
+                    <p>{{ user_obj.email }}</p>
+                    <div class="admin-user-badges">
+                        <span class="admin-badge {% if user_obj.role == 'ADMIN' %}admin-badge-danger{% elif user_obj.role == 'STAFF' %}admin-badge-primary{% else %}admin-badge-secondary{% endif %}">
+                            {{ user_obj.get_role_display }}
+                        </span>
+                        <span class="admin-badge {% if user_obj.is_active %}admin-badge-success{% else %}admin-badge-danger{% endif %}">
+                            {% if user_obj.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-detail-grid">
+        <!-- Account Information -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <span><i class="fas fa-user-circle"></i> Account Information</span>
+            </div>
+            <div class="admin-card-body">
+                <div class="admin-info-row">
+                    <div class="admin-info-label">Full Name</div>
+                    <div class="admin-info-value">{{ user_obj.full_name|default:"Not set" }}</div>
+                </div>
+                <div class="admin-info-row">
+                    <div class="admin-info-label">Email Address</div>
+                    <div class="admin-info-value">{{ user_obj.email }}</div>
+                </div>
+                <div class="admin-info-row">
+                    <div class="admin-info-label">Phone Number</div>
+                    <div class="admin-info-value">{{ user_obj.phone|default:"Not set" }}</div>
+                </div>
+                <div class="admin-info-row">
+                    <div class="admin-info-label">WhatsApp Number</div>
+                    <div class="admin-info-value">{{ user_obj.whatsapp_number|default:"Not set" }}</div>
+                </div>
+                <div class="admin-info-row">
+                    <div class="admin-info-label">Member Since</div>
+                    <div class="admin-info-value">{{ user_obj.created_at|date:"F j, Y" }}</div>
+                </div>
+                <div class="admin-info-row">
+                    <div class="admin-info-label">Last Login</div>
+                    <div class="admin-info-value">{{ user_obj.last_login|date:"F j, Y H:i"|default:"Never" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Preferences -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <span><i class="fas fa-bell"></i> Communication Preferences</span>
+            </div>
+            <div class="admin-card-body">
+                <div class="admin-pref-list">
+                    <div class="admin-pref-item">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp</span>
+                        <span class="admin-pref-status {% if user_obj.whatsapp_opt_in %}active{% else %}inactive{% endif %}">
+                            {% if user_obj.whatsapp_opt_in %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                    </div>
+                    <div class="admin-pref-item">
+                        <i class="fas fa-sms"></i>
+                        <span>SMS</span>
+                        <span class="admin-pref-status {% if user_obj.sms_opt_in %}active{% else %}inactive{% endif %}">
+                            {% if user_obj.sms_opt_in %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                    </div>
+                    <div class="admin-pref-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email</span>
+                        <span class="admin-pref-status {% if user_obj.email_opt_in %}active{% else %}inactive{% endif %}">
+                            {% if user_obj.email_opt_in %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Addresses -->
+    <div class="admin-card mt-4">
+        <div class="admin-card-header">
+            <span><i class="fas fa-map-marker-alt"></i> Saved Addresses</span>
+        </div>
+        <div class="admin-card-body">
+            {% if addresses %}
+                <div class="admin-address-grid">
+                    {% for addr in addresses %}
+                        <div class="admin-address-card {% if addr.is_default %}default{% endif %}">
+                            <div class="admin-address-type">
+                                <i class="fas {% if addr.address_type == 'HOME' %}fa-home{% elif addr.address_type == 'OFFICE' %}fa-building{% else %}fa-map-marker-alt{% endif %}"></i>
+                                {{ addr.get_address_type_display }}
+                                {% if addr.is_default %}
+                                    <span class="admin-default-badge">Default</span>
+                                {% endif %}
+                            </div>
+                            <div class="admin-address-details">
+                                <p>{{ addr.address.address_line1 }}</p>
+                                {% if addr.address.address_line2 %}
+                                    <p>{{ addr.address.address_line2 }}</p>
+                                {% endif %}
+                                <p>{{ addr.address.city }}, {{ addr.address.state }} - {{ addr.address.pincode }}</p>
+                                {% if addr.address.landmark %}
+                                    <p class="admin-address-landmark">Landmark: {{ addr.address.landmark }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="admin-empty-state">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <p>No addresses saved</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="admin-card mt-4">
+        <div class="admin-card-header">
+            <span><i class="fas fa-shopping-cart"></i> Recent Orders</span>
+            <a href="{% url 'admin_panel:orders' %}?user={{ user_obj.id }}" class="admin-link">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="admin-card-body p-0">
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr class="admin-table-row">
+                                <td data-label="Order ID"><span class="admin-order-id">{{ order.order_number }}</span></td
+                                <td data-label="Date">{{ order.created_at|date:"M j, Y" }}</td
+                                <td data-label="Amount"><span class="admin-amount">₹{{ order.total|floatformat:2 }}</span></td
+                                <td data-label="Status">
+                                    {% if order.status == 'DELIVERED' %}
+                                        <span class="admin-badge admin-badge-success">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'CANCELLED' %}
+                                        <span class="admin-badge admin-badge-danger">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'PLACED' %}
+                                        <span class="admin-badge admin-badge-warning">{{ order.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="admin-badge admin-badge-info">{{ order.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Actions">
+                                    <a href="{% url 'admin_panel:order_detail' order.id %}" class="admin-action-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="admin-empty-state py-4">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>No orders placed</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Services -->
+    <div class="admin-card mt-4">
+        <div class="admin-card-header">
+            <span><i class="fas fa-tools"></i> Recent Services</span>
+            <a href="{% url 'admin_panel:services' %}?user={{ user_obj.id }}" class="admin-link">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="admin-card-body p-0">
+            {% if services %}
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Device</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in services %}
+                            <tr class="admin-table-row">
+                                <td data-label="Booking ID"><span class="admin-order-id">{{ service.booking_number }}</span></td
+                                <td data-label="Device">{{ service.device_type }}</td
+                                <td data-label="Date">{{ service.created_at|date:"M j, Y" }}</td
+                                <td data-label="Status">
+                                    {% if service.status == 'COMPLETED' %}
+                                        <span class="admin-badge admin-badge-success">{{ service.get_status_display }}</span>
+                                    {% elif service.status == 'IN_PROGRESS' %}
+                                        <span class="admin-badge admin-badge-info">{{ service.get_status_display }}</span>
+                                    {% elif service.status == 'ASSIGNED' %}
+                                        <span class="admin-badge admin-badge-primary">{{ service.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="admin-badge admin-badge-warning">{{ service.get_status_display }}</span>
+                                    {% endif %}
+                                </td
+                                <td data-label="Actions">
+                                    <a href="{% url 'admin_panel:service_detail' service.id %}" class="admin-action-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="admin-empty-state py-4">
+                    <i class="fas fa-tools"></i>
+                    <p>No service requests</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Page Header */
+    .admin-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .admin-page-title {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #a5b4fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 4px;
+    }
+    
+    .admin-page-subtitle {
+        color: #9ca3af;
+        font-size: 14px;
+    }
+    
+    .admin-back-btn {
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 40px;
+        padding: 8px 20px;
+        color: #a5b4fc;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .admin-back-btn:hover {
+        background: #6366f1;
+        color: white;
+    }
+    
+    /* User Header */
+    .admin-user-header {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+    
+    .admin-user-avatar-large {
+        width: 100px;
+        height: 100px;
+        background: rgba(99, 102, 241, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .admin-user-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .admin-user-avatar-large i {
+        font-size: 60px;
+        color: #a5b4fc;
+    }
+    
+    .admin-user-header-info h2 {
+        font-size: 24px;
+        margin-bottom: 4px;
+        color: #e5e7eb;
+    }
+    
+    .admin-user-header-info p {
+        color: #9ca3af;
+        margin-bottom: 12px;
+    }
+    
+    .admin-user-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    /* Detail Grid */
+    .admin-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    
+    /* Info Rows */
+    .admin-info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .admin-info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .admin-info-label {
+        color: #9ca3af;
+        font-size: 13px;
+    }
+    
+    .admin-info-value {
+        color: #e5e7eb;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    /* Preferences */
+    .admin-pref-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .admin-pref-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        flex-wrap: wrap;
+    }
+    
+    .admin-pref-item i {
+        width: 24px;
+        color: #a5b4fc;
+    }
+    
+    .admin-pref-item span:first-of-type {
+        flex: 1;
+        color: #e5e7eb;
+        font-size: 14px;
+    }
+    
+    .admin-pref-status {
+        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 20px;
+    }
+    
+    .admin-pref-status.active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+    
+    .admin-pref-status.inactive {
+        background: rgba(107, 114, 128, 0.15);
+        color: #9ca3af;
+    }
+    
+    /* Address Grid */
+    .admin-address-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .admin-address-card {
+        background: rgba(26, 28, 35, 0.5);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 16px;
+        padding: 16px;
+        position: relative;
+    }
+    
+    .admin-address-card.default {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .admin-address-type {
+        font-size: 12px;
+        color: #a5b4fc;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .admin-default-badge {
+        background: #6366f1;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+    }
+    
+    .admin-address-details p {
+        color: #9ca3af;
+        font-size: 13px;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+    
+    .admin-address-landmark {
+        color: #a5b4fc !important;
+        font-size: 12px !important;
+        margin-top: 8px !important;
+    }
+    
+    /* Table Styles */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 500px;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    
+    .admin-table th {
+        color: #9ca3af;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+    
+    .admin-table tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+    
+    /* Empty State */
+    .admin-empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+    }
+    
+    .admin-empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .admin-empty-state p {
+        margin: 0;
+    }
+    
+    /* Card */
+    .admin-card {
+        background: rgba(26, 28, 35, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .admin-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #e5e7eb;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .admin-card-header i {
+        color: #6366f1;
+        margin-right: 8px;
+    }
+    
+    .admin-card-body {
+        padding: 20px;
+    }
+    
+    /* Badges */
+    .admin-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .admin-badge-success {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+    
+    .admin-badge-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+    
+    .admin-badge-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+    
+    .admin-badge-info {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+    
+    .admin-badge-primary {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+    }
+    
+    .admin-badge-secondary {
+        background: rgba(107, 114, 128, 0.15);
+        color: #9ca3af;
+    }
+    
+    /* Action Button */
+    .admin-action-btn {
+        background: rgba(99, 102, 241, 0.15);
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: #a5b4fc;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    
+    .admin-action-btn:hover {
+        background: #6366f1;
+        color: white;
+    }
+    
+    .admin-link {
+        color: #a5b4fc;
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+    
+    .admin-link:hover {
+        color: #6366f1;
+    }
+    
+    .admin-order-id {
+        font-family: monospace;
+        font-size: 13px;
+        color: #a5b4fc;
+    }
+    
+    .admin-amount {
+        font-weight: 600;
+        color: #34d399;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .admin-detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .admin-address-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .admin-page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .admin-user-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .admin-user-avatar-large {
+            margin: 0 auto;
+        }
+        
+        .admin-user-badges {
+            justify-content: center;
+        }
+        
+        .admin-info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .admin-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .admin-table {
+            min-width: 100%;
+        }
+        
+        .admin-table th {
+            display: none;
+        }
+        
+        .admin-table tr {
+            display: block;
+            margin-bottom: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 12px;
+        }
+        
+        .admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        .admin-table td:last-child {
+            border-bottom: none;
+        }
+        
+        .admin-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #a5b4fc;
+            font-size: 12px;
+            margin-right: 16px;
+            min-width: 80px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .admin-page-title {
+            font-size: 22px;
+        }
+        
+        .admin-user-header-info h2 {
+            font-size: 20px;
+        }
+        
+        .admin-pref-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .admin-table td {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .admin-table td::before {
+            margin-bottom: 4px;
+        }
+    }
+    
+    .mt-4 {
+        margin-top: 24px;
+    }
+    
+    .mb-4 {
+        margin-bottom: 24px;
+    }
+    
+    .p-0 {
+        padding: 0;
+    }
+    
+    .py-4 {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+</style>
+{% endblock %}

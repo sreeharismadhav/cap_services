@@ -1,0 +1,111 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Payment Failed - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .amount-box {
+        background: #f8fafc;
+        border: 1px solid #eef2f6;
+    }
+    
+    .btn-primary {
+        background: #2A6FB0;
+        border: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a76;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary:hover {
+        transform: translateY(-2px);
+    }
+    
+    .card {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .help-section {
+        background: #fef3c7;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .help-section i {
+        color: #d97706;
+    }
+    
+    .error-icon {
+        animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-times-circle fa-4x text-danger error-icon"></i>
+                    </div>
+                    <h3 class="mb-3">Payment Failed</h3>
+                    <p class="text-muted mb-4">We couldn't process your payment</p>
+                    
+                    {% if payment and payment.gateway_response.mismatch_note %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ payment.gateway_response.mismatch_note }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if payment and payment.gateway_response.verification_error %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ payment.gateway_response.verification_error }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="amount-box bg-light p-3 rounded-3 mb-4">
+                        <div class="small text-muted">Order Amount</div>
+                        <div class="h4 mb-0">₹{{ order.total|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'orders:payment_retry' order.id %}" class="btn btn-primary py-3">
+                            <i class="fas fa-sync-alt me-2"></i> Retry Payment
+                        </a>
+                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-outline-secondary py-3">
+                            <i class="fas fa-eye me-2"></i> View Order
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-link text-decoration-none">
+                            <i class="fas fa-shopping-bag me-2"></i> Continue Shopping
+                        </a>
+                    </div>
+                    
+                    <div class="help-section mt-4">
+                        <i class="fas fa-headset me-2"></i>
+                        <small>Need help? Contact our support team at <strong>support@capservices.com</strong></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

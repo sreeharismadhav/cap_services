@@ -1,0 +1,298 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Delete Category - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">Delete Category</h1>
+        <p class="admin-page-subtitle">Confirm category deletion</p>
+    </div>
+    <a href="{% url 'admin_panel:categories' %}" class="admin-back-link">
+        <i class="fas fa-arrow-left"></i> Back to Categories
+    </a>
+</div>
+
+<div class="admin-delete-card">
+    <div class="admin-delete-warning">
+        <div class="admin-warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2>Are you sure?</h2>
+        <p>You are about to delete category <strong>"{{ category.name }}"</strong></p>
+        
+        {% if product_count > 0 %}
+        <div class="admin-warning-box">
+            <i class="fas fa-boxes"></i>
+            <div class="admin-warning-box-content">
+                <p>This category contains <strong>{{ product_count }} products</strong>.</p>
+                <p class="admin-warning-box-note">These products will NOT be deleted, but they will no longer have this category assigned.</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if category.children.count > 0 %}
+        <div class="admin-warning-box">
+            <i class="fas fa-folder-open"></i>
+            <div class="admin-warning-box-content">
+                <p>This category has <strong>{{ category.children.count }} subcategories</strong>.</p>
+                <p class="admin-warning-box-note">They will become top-level categories after deletion.</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="admin-category-preview">
+            <div class="admin-preview-image">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                {% else %}
+                    <i class="fas fa-folder"></i>
+                {% endif %}
+            </div>
+            <div class="admin-preview-info">
+                <h3>{{ category.name }}</h3>
+                <p>{{ category.description|truncatechars:100|default:"No description" }}</p>
+                <div class="admin-preview-stats">
+                    <span><i class="fas fa-box"></i> {{ product_count }} products</span>
+                    <span><i class="fas fa-folder-open"></i> {{ category.children.count }} subcategories</span>
+                </div>
+            </div>
+        </div>
+        
+        <p class="admin-warning-text">This action cannot be undone.</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="admin-delete-actions">
+            <a href="{% url 'admin_panel:categories' %}" class="admin-btn-secondary">Cancel</a>
+            <button type="submit" class="admin-btn-danger">Delete Category</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+    margin: 0;
+}
+.admin-back-link {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 10px;
+    padding: 8px 18px;
+    color: #a5b4fc;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.admin-delete-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 560px;
+    margin: 0 auto;
+}
+.admin-delete-warning {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.admin-warning-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(239,68,68,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.admin-warning-icon i {
+    font-size: 40px;
+    color: #f87171;
+}
+.admin-delete-warning h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 8px;
+}
+.admin-delete-warning > p {
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+.admin-warning-box {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    text-align: left;
+}
+.admin-warning-box i {
+    font-size: 20px;
+    color: #fbbf24;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.admin-warning-box-content {
+    flex: 1;
+}
+.admin-warning-box-content p {
+    color: #fbbf24;
+    font-size: 13px;
+    margin: 0 0 4px 0;
+}
+.admin-warning-box-note {
+    font-size: 12px !important;
+    color: #b45309 !important;
+    margin-top: 4px !important;
+}
+.admin-category-preview {
+    background: #0f1115;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 24px 0;
+    display: flex;
+    gap: 20px;
+    text-align: left;
+}
+.admin-preview-image {
+    width: 80px;
+    height: 80px;
+    background: #1a1c23;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.admin-preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.admin-preview-image i {
+    font-size: 40px;
+    color: #6366f1;
+}
+.admin-preview-info {
+    flex: 1;
+}
+.admin-preview-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0 0 6px 0;
+}
+.admin-preview-info p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+.admin-preview-stats {
+    display: flex;
+    gap: 16px;
+}
+.admin-preview-stats span {
+    font-size: 11px;
+    color: #9ca3af;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.admin-preview-stats i {
+    color: #6366f1;
+}
+.admin-warning-text {
+    font-size: 12px;
+    color: #f87171;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #2a2a30;
+}
+.admin-delete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+.admin-btn-secondary {
+    background: #2a2a30;
+    color: #e5e7eb;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.admin-btn-secondary:hover {
+    background: #3a3a40;
+}
+.admin-btn-danger {
+    background: #ef4444;
+    color: white;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+@media (max-width: 768px) {
+    .admin-delete-card {
+        padding: 24px;
+    }
+    .admin-category-preview {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .admin-preview-stats {
+        justify-content: center;
+    }
+    .admin-delete-actions {
+        flex-direction: column;
+    }
+    .admin-btn-secondary,
+    .admin-btn-danger {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

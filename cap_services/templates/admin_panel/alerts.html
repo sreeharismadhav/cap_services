@@ -1,0 +1,625 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}System Alerts - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">System Alerts</h1>
+        <p class="admin-page-subtitle">Important system notifications and warnings</p>
+    </div>
+    <button class="admin-btn-secondary" onclick="markAllRead()">
+        <i class="fas fa-check-double"></i> Mark All Read
+    </button>
+</div>
+
+<div class="admin-form-card">
+    {% if alerts %}
+        <div class="admin-alerts-list">
+            {% for alert in alerts %}
+                <div class="admin-alert-item {% if not alert.is_read %}admin-alert-unread{% endif %}" data-alert-id="{{ alert.id }}">
+                    <div class="admin-alert-icon">
+                        {% if alert.alert_type == 'ERROR' %}
+                            <i class="fas fa-times-circle"></i>
+                        {% elif alert.alert_type == 'WARNING' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% elif alert.alert_type == 'SUCCESS' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="admin-alert-content">
+                        <div class="admin-alert-header">
+                            <div class="admin-alert-badges">
+                                <span class="admin-badge admin-badge-{{ alert.alert_type|lower }}">
+                                    {% if alert.alert_type == 'ERROR' %}
+                                        <i class="fas fa-times-circle"></i> Critical
+                                    {% elif alert.alert_type == 'WARNING' %}
+                                        <i class="fas fa-exclamation-triangle"></i> Warning
+                                    {% elif alert.alert_type == 'SUCCESS' %}
+                                        <i class="fas fa-check-circle"></i> Success
+                                    {% else %}
+                                        <i class="fas fa-info-circle"></i> Info
+                                    {% endif %}
+                                </span>
+                                {% if not alert.is_read %}
+                                    <span class="admin-badge admin-badge-new">
+                                        <i class="fas fa-circle"></i> New
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="admin-alert-time">
+                                <i class="far fa-clock"></i> {{ alert.created_at|date:"M j, Y H:i" }}
+                            </div>
+                        </div>
+                        <h5 class="admin-alert-title">{{ alert.title }}</h5>
+                        <p class="admin-alert-message">{{ alert.message }}</p>
+                        {% if alert.link %}
+                            <a href="{{ alert.link }}" class="admin-alert-link">
+                                View Details <i class="fas fa-arrow-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% if not alert.is_read %}
+                        <div class="admin-alert-action">
+                            <form method="post" action="{% url 'admin_panel:alerts' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="mark_read" value="{{ alert.id }}">
+                                <button type="submit" class="admin-alert-mark-btn" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if alerts.has_other_pages %}
+            <div class="admin-pagination">
+                <div class="admin-pagination-info">
+                    Showing {{ alerts.start_index }} to {{ alerts.end_index }} of {{ alerts.paginator.count }} alerts
+                </div>
+                <ul class="admin-pagination-list">
+                    {% if alerts.has_previous %}
+                        <li>
+                            <a href="?page={{ alerts.previous_page_number }}" class="admin-pagination-link">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in alerts.paginator.page_range %}
+                        {% if alerts.number == num %}
+                            <li><span class="admin-pagination-link active">{{ num }}</span></li>
+                        {% elif num > alerts.number|add:'-3' and num < alerts.number|add:'3' %}
+                            <li><a href="?page={{ num }}" class="admin-pagination-link">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if alerts.has_next %}
+                        <li>
+                            <a href="?page={{ alerts.next_page_number }}" class="admin-pagination-link">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="admin-empty-state">
+            <div class="admin-empty-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h3>No Alerts</h3>
+            <p>All systems are operating normally</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="admin-quick-actions">
+    <div class="admin-quick-card">
+        <div class="admin-quick-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="admin-quick-info">
+            <h6>Low Stock Alert</h6>
+            <p>Check inventory for low stock items</p>
+            <a href="{% url 'admin_panel:inventory' %}?low_stock=1" class="admin-quick-link">
+                View Low Stock <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="admin-quick-card">
+        <div class="admin-quick-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="admin-quick-info">
+            <h6>Pending Orders</h6>
+            <p>Orders awaiting processing</p>
+            <a href="{% url 'admin_panel:orders' %}?status=PLACED" class="admin-quick-link">
+                View Pending <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="admin-quick-card">
+        <div class="admin-quick-icon">
+            <i class="fas fa-tools"></i>
+        </div>
+        <div class="admin-quick-info">
+            <h6>Pending Services</h6>
+            <p>Service requests waiting for assignment</p>
+            <a href="{% url 'admin_panel:services' %}?status=REQUESTED" class="admin-quick-link">
+                View Requests <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAllRead() {
+    if (confirm('Mark all alerts as read?')) {
+        fetch('{% url "admin_panel:mark_all_alerts_read" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 10px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    `;
+    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<style>
+/* Page Header */
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+}
+.admin-btn-secondary {
+    background: #2a2a30;
+    color: #e5e7eb;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-btn-secondary:hover {
+    background: #3a3a40;
+}
+
+/* Form Card */
+.admin-form-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* Alerts List */
+.admin-alerts-list {
+    display: flex;
+    flex-direction: column;
+}
+.admin-alert-item {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    border-bottom: 1px solid #2a2a30;
+    transition: all 0.3s ease;
+    position: relative;
+}
+.admin-alert-item:last-child {
+    border-bottom: none;
+}
+.admin-alert-item:hover {
+    background: #1f2128;
+}
+.admin-alert-unread {
+    background: rgba(99, 102, 241, 0.05);
+}
+.admin-alert-unread::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #6366f1;
+}
+
+/* Alert Icon */
+.admin-alert-icon {
+    width: 48px;
+    height: 48px;
+    background: #0f1115;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.admin-alert-icon i {
+    font-size: 24px;
+}
+.admin-alert-icon i {
+    color: #6366f1;
+}
+
+/* Alert Content */
+.admin-alert-content {
+    flex: 1;
+}
+.admin-alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.admin-alert-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.admin-badge-error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+.admin-badge-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+.admin-badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+.admin-badge-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+.admin-badge-new {
+    background: #6366f1;
+    color: white;
+}
+.admin-badge-new i {
+    font-size: 8px;
+}
+.admin-alert-time {
+    font-size: 12px;
+    color: #9ca3af;
+}
+.admin-alert-time i {
+    margin-right: 4px;
+}
+.admin-alert-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 8px;
+}
+.admin-alert-message {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.admin-alert-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #a5b4fc;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.admin-alert-link:hover {
+    color: #c7d2fe;
+    gap: 10px;
+}
+
+/* Alert Action */
+.admin-alert-action {
+    flex-shrink: 0;
+}
+.admin-alert-mark-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+    color: #a5b4fc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.admin-alert-mark-btn:hover {
+    background: #6366f1;
+    color: white;
+}
+
+/* Empty State */
+.admin-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+.admin-empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.admin-empty-icon i {
+    font-size: 40px;
+    color: #6366f1;
+}
+.admin-empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 8px;
+}
+.admin-empty-state p {
+    color: #9ca3af;
+}
+
+/* Pagination */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a30;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-pagination-info {
+    font-size: 13px;
+    color: #9ca3af;
+}
+.admin-pagination-list {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+.admin-pagination-list li {
+    display: inline-block;
+}
+.admin-pagination-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #2a2a30;
+    border-radius: 8px;
+    color: #e5e7eb;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.admin-pagination-link:hover {
+    background: #6366f1;
+    color: white;
+}
+.admin-pagination-link.active {
+    background: #6366f1;
+    color: white;
+}
+
+/* Quick Actions */
+.admin-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 24px;
+}
+.admin-quick-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    transition: all 0.3s;
+}
+.admin-quick-card:hover {
+    transform: translateY(-4px);
+    border-color: #6366f1;
+}
+.admin-quick-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.admin-quick-icon i {
+    font-size: 24px;
+    color: #a5b4fc;
+}
+.admin-quick-info {
+    flex: 1;
+}
+.admin-quick-info h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+.admin-quick-info p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+.admin-quick-link {
+    font-size: 12px;
+    color: #a5b4fc;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+.admin-quick-link:hover {
+    color: #c7d2fe;
+    gap: 8px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .admin-quick-actions {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .admin-alert-item {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .admin-alert-icon {
+        align-self: flex-start;
+    }
+    
+    .admin-alert-action {
+        align-self: flex-end;
+    }
+    
+    .admin-pagination {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-pagination-list {
+        justify-content: center;
+    }
+    
+    .admin-quick-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-quick-icon {
+        margin: 0 auto;
+    }
+    
+    .admin-quick-link {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-alert-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .admin-page-title {
+        font-size: 20px;
+    }
+    
+    .admin-alert-item {
+        padding: 16px;
+    }
+    
+    .admin-pagination-link {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+}
+</style>
+{% endblock %}

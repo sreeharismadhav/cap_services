@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Under Maintenance - CAP Services</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1E1E2F 0%, #2a2a3a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .maintenance-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+        
+        .maintenance-icon {
+            font-size: 80px;
+            color: #ffc400;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        h1 span {
+            color: #ffc400;
+        }
+        
+        p {
+            font-size: 1.125rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+        
+        .progress-fill {
+            width: 65%;
+            height: 100%;
+            background: #ffc400;
+            border-radius: 3px;
+            animation: loading 1.5s ease-in-out infinite;
+        }
+        
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .info-box p {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .contact {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .contact a {
+            color: #ffc400;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .contact a:hover {
+            text-decoration: underline;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #ffc400;
+            color: #1E1E2F;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,196,0,0.3);
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes loading {
+            0% {
+                width: 0%;
+            }
+            50% {
+                width: 65%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .maintenance-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="maintenance-icon">
+            <i class="fas fa-tools"></i>
+        </div>
+        
+        <h1>We'll Be <span>Back Soon</span></h1>
+        
+        <p>Our website is currently undergoing scheduled maintenance to serve you better. We apologize for any inconvenience.</p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="info-box">
+            <p><i class="fas fa-clock"></i> Estimated completion: 2-3 hours</p>
+            <p><i class="fas fa-calendar-alt"></i> Date: March 20, 2026</p>
+            <div class="contact">
+                <a href="mailto:capservicers@gmail.com"><i class="fas fa-envelope"></i> capservicers@gmail.com</a>
+                <a href="tel:+917510158899"><i class="fas fa-phone"></i> 7510158899</a>
+            </div>
+        </div>
+        
+        <a href="#" class="btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Check Again</a>
+        
+        <div style="margin-top: 2rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
+            <p>CAP Services © {% now "Y" %}</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto refresh every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

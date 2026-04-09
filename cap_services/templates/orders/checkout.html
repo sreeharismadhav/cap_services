@@ -1,0 +1,621 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Checkout - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-header {
+        margin-bottom: 2rem;
+    }
+    .checkout-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f1f1f;
+        margin-bottom: 0.5rem;
+    }
+    .checkout-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    /* Progress Steps */
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .checkout-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 0;
+    }
+    .step {
+        text-align: center;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+        background: white;
+    }
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .step.active .step-number {
+        background: #2A6FB0;
+        color: white;
+    }
+    .step.completed .step-number {
+        background: #10b981;
+        color: white;
+    }
+    .step-label {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    .step.active .step-label {
+        color: #2A6FB0;
+        font-weight: 600;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom: 1.5rem;
+    }
+    .form-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eef2f6;
+        background: #fafbfc;
+    }
+    .form-card-header h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f1f1f;
+        margin: 0;
+    }
+    .form-card-header h5 i {
+        color: #2A6FB0;
+        margin-right: 0.5rem;
+    }
+    .form-card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Address Cards */
+    .address-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    .address-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .address-card:hover {
+        border-color: #2A6FB0;
+        background: #f8fafc;
+    }
+    .address-card.selected {
+        border-color: #2A6FB0;
+        background: #f0f7ff;
+    }
+    .address-card input {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 18px;
+        height: 18px;
+        accent-color: #2A6FB0;
+    }
+    .address-type {
+        font-weight: 600;
+        color: #2A6FB0;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        padding-right: 2rem;
+    }
+    .default-badge {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #2A6FB0;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        margin-left: 0.5rem;
+    }
+    .address-details {
+        color: #475569;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+    .add-address-btn {
+        border: 1px dashed #2A6FB0;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #2A6FB0;
+        font-weight: 500;
+    }
+    
+    /* Payment Options */
+    .payment-options {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .payment-option {
+        flex: 1;
+        min-width: 150px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .payment-option:hover {
+        border-color: #2A6FB0;
+        transform: translateY(-2px);
+    }
+    .payment-option.selected {
+        border-color: #2A6FB0;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        box-shadow: 0 4px 12px rgba(42,111,176,0.1);
+    }
+    .payment-option i {
+        font-size: 1.75rem;
+        color: #2A6FB0;
+        margin-bottom: 0.5rem;
+    }
+    .payment-option p {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #1f1f1f;
+        font-size: 0.9rem;
+    }
+    .payment-option small {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+    
+    .info-note {
+        background: #fef3c7;
+        border-radius: 10px;
+        padding: 0.75rem;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: #b45309;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .info-note.blue {
+        background: #e8f0fe;
+        color: #2A6FB0;
+    }
+    
+    .order-notes textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        resize: vertical;
+    }
+    .order-notes textarea:focus {
+        outline: none;
+        border-color: #2A6FB0;
+    }
+    
+    /* Order Summary */
+    .summary-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #eef2f6;
+        position: sticky;
+        top: 100px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .summary-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eef2f6;
+    }
+    .summary-header h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .summary-body {
+        padding: 1.5rem;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    .summary-row.total {
+        border-top: 1px solid #eef2f6;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .total-amount {
+        color: #2A6FB0;
+        font-size: 1.25rem;
+    }
+    .items-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 1rem;
+    }
+    .cart-item {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #eef2f6;
+    }
+    .cart-item-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f8fafc;
+        flex-shrink: 0;
+    }
+    .cart-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .cart-item-details {
+        flex: 1;
+    }
+    .cart-item-name {
+        font-weight: 500;
+        font-size: 0.85rem;
+        color: #1f1f1f;
+        margin-bottom: 0.25rem;
+    }
+    .item-badge {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #2A6FB0;
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 20px;
+        margin-bottom: 0.25rem;
+    }
+    .cart-item-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    .btn-place-order {
+        background: #2A6FB0;
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 40px;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.2s;
+        margin-top: 1.5rem;
+    }
+    .btn-place-order:hover {
+        background: #1e4a76;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(42,111,176,0.3);
+    }
+    
+    .back-to-cart {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+    }
+    .back-to-cart:hover {
+        color: #2A6FB0;
+    }
+    
+    @media (max-width: 768px) {
+        .address-grid {
+            grid-template-columns: 1fr;
+        }
+        .payment-options {
+            flex-direction: column;
+        }
+        .summary-card {
+            position: static;
+            margin-top: 1.5rem;
+        }
+        .checkout-steps {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="checkout-header">
+        <h1>Checkout</h1>
+        <p>Complete your purchase securely</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="checkout-steps">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Address</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Payment</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Confirm Order</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-7">
+            <form method="post" action="{% url 'orders:checkout' %}" id="checkoutForm">
+                {% csrf_token %}
+                
+                <!-- Address Section -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h5><i class="fas fa-map-marker-alt"></i> Delivery Address</h5>
+                    </div>
+                    <div class="form-card-body">
+                        {% if addresses %}
+                            <div class="address-grid">
+                                {% for addr in addresses %}
+                                    <div class="address-card" onclick="selectAddress(this, '{{ addr.id }}')">
+                                        <input type="radio" name="address_id" value="{{ addr.id }}" id="addr_{{ addr.id }}" {% if addr.is_default %}checked{% endif %} required>
+                                        <div class="address-type">
+                                            {{ addr.get_address_type_display }}
+                                            {% if addr.is_default %}<span class="default-badge">Default</span>{% endif %}
+                                        </div>
+                                        <div class="address-details">
+                                            {{ addr.address.address_line1 }}{% if addr.address.address_line2 %}, {{ addr.address.address_line2 }}{% endif %}<br>
+                                            {{ addr.address.city }}, {{ addr.address.state }} - {{ addr.address.pincode }}<br>
+                                            {% if addr.address.phone %}<i class="fas fa-phone-alt"></i> {{ addr.address.phone }}{% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <div class="address-card add-address-btn" onclick="location.href='{% url 'accounts:add_address' %}'">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Add New Address</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="info-note" style="background: #fef3c7;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No address found. Please add an address first.
+                                <div class="mt-2">
+                                    <a href="{% url 'accounts:add_address' %}" class="btn btn-sm btn-primary">Add Address</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Payment Section -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h5><i class="fas fa-credit-card"></i> Payment Method</h5>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="payment-options">
+                            <div class="payment-option selected" data-method="UPI" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i>
+                                <p>UPI</p>
+                                <small>Google Pay, PhonePe, Paytm</small>
+                            </div>
+                            
+                            {% if not has_products %}
+                            <div class="payment-option" data-method="COD" onclick="selectPayment(this)">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <p>Cash on Delivery</p>
+                                <small>Pay when service is completed</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="UPI">
+                        
+                        {% if not has_products %}
+                        <div class="info-note">
+                            <i class="fas fa-info-circle"></i>
+                            Cash on Delivery is available for service bookings only. You pay when the service is completed.
+                        </div>
+                        {% else %}
+                        <div class="info-note blue">
+                            <i class="fas fa-truck"></i>
+                            Physical products require online payment via UPI. COD is only available for services.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Order Notes -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h5><i class="fas fa-pencil-alt"></i> Order Notes</h5>
+                    </div>
+                    <div class="form-card-body order-notes">
+                        <textarea name="notes" rows="3" placeholder="Any special instructions for delivery or service? (Optional)"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Column - Order Summary -->
+        <div class="col-lg-5">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <h5><i class="fas fa-receipt"></i> Order Summary</h5>
+                </div>
+                <div class="summary-body">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>₹{{ cart.subtotal|floatformat:2 }}</span>
+                    </div>
+                    {% if cart.discount_total > 0 %}
+                    <div class="summary-row">
+                        <span>Discount</span>
+                        <span class="text-success">-₹{{ cart.discount_total|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="summary-row">
+                        <span>Delivery</span>
+                        <span class="text-success">Free</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Amount</span>
+                        <span class="total-amount">₹{{ cart.total|floatformat:2 }}</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Your Items</h6>
+                        <small class="text-muted">{{ cart.item_count }} item(s)</small>
+                    </div>
+                    <div class="items-list">
+                        {% for item in cart.items.all %}
+                        <div class="cart-item">
+                            <div class="cart-item-image">
+                                {% if item.product %}
+                                    {% with item.product.images.first as img %}
+                                        {% if img %}
+                                            <img src="{{ img.image.url }}" alt="{{ item.product.name }}">
+                                        {% else %}
+                                            <img src="{% static 'images/placeholders/product-placeholder.jpg' %}" alt="{{ item.product.name }}">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% with item.service.images.first as img %}
+                                        {% if img %}
+                                            <img src="{{ img.image.url }}" alt="{{ item.service.name }}">
+                                        {% else %}
+                                            <img src="{% static 'images/placeholders/service-placeholder.jpg' %}" alt="{{ item.service.name }}">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                            <div class="cart-item-details">
+                                <div class="cart-item-name">
+                                    {% if item.product %}
+                                        {{ item.product.name }}
+                                    {% else %}
+                                        {{ item.service.name }}
+                                    {% endif %}
+                                </div>
+                                <div class="item-badge">
+                                    {% if item.product %}
+                                        <i class="fas fa-box"></i> Product
+                                    {% else %}
+                                        <i class="fas fa-tools"></i> Service
+                                    {% endif %}
+                                </div>
+                                <div class="cart-item-meta">
+                                    <span>Qty: {{ item.quantity }}</span>
+                                    <span>₹{{ item.subtotal|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="submit" form="checkoutForm" class="btn-place-order" id="placeOrderBtn">
+                        <i class="fas fa-lock me-2"></i>Place Order • ₹{{ cart.total|floatformat:2 }}
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'orders:cart_detail' %}" class="back-to-cart">
+                            <i class="fas fa-arrow-left"></i> Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Address selection
+    function selectAddress(element, addressId) {
+        document.querySelectorAll('.address-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        document.getElementById('addr_' + addressId).checked = true;
+    }
+    
+    // Payment selection
+    function selectPayment(element) {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        document.getElementById('selectedPaymentMethod').value = element.dataset.method;
+    }
+    
+    // Highlight default address on load
+    document.querySelectorAll('.address-card').forEach(card => {
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio && radio.checked) {
+            card.classList.add('selected');
+        }
+    });
+    
+    // Form validation
+    const form = document.getElementById('checkoutForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const addressSelected = document.querySelector('input[name="address_id"]:checked');
+            if (!addressSelected) {
+                e.preventDefault();
+                alert('Please select a delivery address');
+                return;
+            }
+        });
+    }
+</script>
+{% endblock %}

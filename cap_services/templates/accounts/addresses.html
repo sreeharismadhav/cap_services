@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+{% load static %}
+{% load core_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Addresses - CAP Services</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* Sidebar Styles */
+        .profile-sidebar {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-avatar i {
+            font-size: 3rem;
+            color: #2A6FB0;
+        }
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 0.25rem;
+        }
+        .profile-email {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .sidebar-nav a {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-nav a i {
+            width: 24px;
+            margin-right: 0.5rem;
+            color: #94a3b8;
+        }
+        .sidebar-nav a:hover {
+            background: #f1f5f9;
+            color: #2A6FB0;
+        }
+        .sidebar-nav a.active {
+            background: #2A6FB0;
+            color: white;
+        }
+        .sidebar-nav a.active i {
+            color: white;
+        }
+        .sidebar-nav a.logout {
+            color: #ef4444;
+            margin-top: 1rem;
+            border-top: 1px solid #eef2f6;
+            border-radius: 0;
+            padding-top: 1rem;
+        }
+        .sidebar-nav a.logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        /* Address Card */
+        .address-card {
+            background: white;
+            border: 1px solid #eef2f6;
+            border-radius: 16px;
+            transition: all 0.2s;
+            height: 100%;
+        }
+        .address-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: #2A6FB0;
+        }
+        .address-card.default {
+            border-color: #2A6FB0;
+            background: #f8fafc;
+        }
+        .address-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .address-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #2A6FB0;
+            font-size: 0.9rem;
+        }
+        .default-badge {
+            background: #2A6FB0;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+        .address-details {
+            color: #475569;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+        .address-details p {
+            margin-bottom: 0.25rem;
+        }
+        .receiver-info {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+        .address-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #eef2f6;
+        }
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-default {
+            background: #f1f5f9;
+            color: #2A6FB0;
+        }
+        .btn-default:hover {
+            background: #2A6FB0;
+            color: white;
+        }
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+            text-decoration: none;
+        }
+        .btn-edit:hover {
+            background: #2A6FB0;
+            color: white;
+        }
+        .btn-delete {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-header h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin: 0;
+        }
+        .btn-add {
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-add:hover {
+            background: #1e4a76;
+            transform: translateY(-2px);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: #f8fafc;
+            border-radius: 20px;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+        .empty-state h5 {
+            font-size: 1.1rem;
+            color: #1f1f1f;
+            margin-bottom: 0.5rem;
+        }
+        .empty-state p {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modal */
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+        }
+        .modal-header {
+            border-bottom: 1px solid #eef2f6;
+            padding: 1rem 1.5rem;
+        }
+        .modal-title {
+            color: #1f1f1f;
+            font-size: 1.1rem;
+        }
+        .modal-body {
+            padding: 1.5rem;
+            color: #475569;
+        }
+        .modal-footer {
+            border-top: 1px solid #eef2f6;
+            padding: 1rem 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-sidebar {
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-wrapper">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-logo">CAP</div>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-content">
+                <div class="contact-info">
+                    <span><i class="fas fa-phone"></i> {{ site_phone }}</span>
+                    <span><i class="fas fa-envelope"></i> {{ site_email }}</span>
+                    <span><i class="fas fa-clock"></i> Mon-Sat: 9AM - 8PM</span>
+                </div>
+                <div class="user-actions">
+                    {% if request.session.user_id %}
+                        <span class="top-link"><i class="fas fa-user"></i> {{ request.session.user_email }}</span>
+                        <a href="{% url 'accounts:logout' %}" class="top-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="top-link"><i class="fas fa-user"></i> Login</a>
+                        <a href="{% url 'accounts:register' %}" class="top-link"><i class="fas fa-user-plus"></i> Register</a>
+                    {% endif %}
+                    <a href="#" class="top-link"><i class="fas fa-headset"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="{% url 'core:home' %}" class="logo">
+                    <span class="logo-text">CAP</span>
+                    <span class="logo-accent">Services</span>
+                </a>
+
+                <div class="search-wrapper">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <form action="{% url 'store:search' %}" method="get" style="flex: 1; display: flex;">
+                            <input type="text" name="q" placeholder="Search for computers, accessories, services..." value="{{ search_query|default:'' }}">
+                            <button type="submit" class="search-btn">Search</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+                    <div class="action-item" id="accountDropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Account</span>
+                        <div class="dropdown-menu">
+                            {% if request.session.user_id %}
+                                <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                                <a href="{% url 'orders:order_list' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+                                <a href="#"><i class="fas fa-heart"></i> Wishlist</a>
+                                <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                                <a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist</span>
+                        <span class="badge wishlist-badge">0</span>
+                    </div>
+                    <a href="{% url 'orders:cart_detail' %}" class="action-item cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Cart</span>
+                        <span class="badge cart-badge">{{ cart_count|default:0 }}</span>
+                    </a>
+                </div>
+
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="{% url 'store:product_list' %}">Products</a>
+                <a href="{% url 'staff:services_list' %}">Services</a>
+                <a href="#">Support</a>
+                <hr>
+                {% if not request.session.user_id %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                    <a href="{% url 'accounts:register' %}">Sign Up</a>
+                {% else %}
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
+                    <a href="{% url 'orders:order_list' %}">Orders</a>
+                    <a href="{% url 'accounts:logout' %}">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- Sidebar -->
+                <div class="col-md-4 col-lg-3">
+                    <div class="profile-sidebar">
+                        <div class="p-4 text-center">
+                            <div class="profile-avatar">
+                                {% if profile.profile_pic %}
+                                    <img src="{{ profile.profile_pic.url }}" alt="{{ user.full_name }}">
+                                {% else %}
+                                    <i class="fas fa-user-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="profile-name">{{ user.full_name|default:user.email }}</div>
+                            <div class="profile-email">{{ user.email }}</div>
+                        </div>
+                        <div class="sidebar-nav p-4 pt-0">
+                            <a href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="{% url 'accounts:addresses' %}" class="active">
+                                <i class="fas fa-map-marker-alt"></i> Addresses
+                            </a>
+                            <a href="{% url 'orders:order_list' %}">
+                                <i class="fas fa-shopping-bag"></i> My Orders
+                            </a>
+                            <a href="{% url 'staff:services_list' %}">
+                                <i class="fas fa-tools"></i> My Services
+                            </a>
+                            <a href="{% url 'accounts:logout' %}" class="logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="col-md-8 col-lg-9">
+                    <div class="page-header">
+                        <h4><i class="fas fa-map-marker-alt me-2"></i> My Addresses</h4>
+                        <a href="{% url 'accounts:add_address' %}" class="btn-add">
+                            <i class="fas fa-plus"></i> Add New Address
+                        </a>
+                    </div>
+                    
+                    {% if addresses %}
+                        <div class="row g-4">
+                            {% for addr in addresses %}
+                                <div class="col-md-6">
+                                    <div class="address-card {% if addr.is_default %}default{% endif %}">
+                                        <div class="p-3">
+                                            <div class="address-card-header">
+                                                <div class="address-type">
+                                                    {% if addr.address_type == 'HOME' %}
+                                                        <i class="fas fa-home"></i>
+                                                    {% elif addr.address_type == 'OFFICE' %}
+                                                        <i class="fas fa-building"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                    {% endif %}
+                                                    {{ addr.get_address_type_display }}
+                                                </div>
+                                                {% if addr.is_default %}
+                                                    <span class="default-badge">Default</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="address-details">
+                                                <p>{{ addr.address.address_line1 }}</p>
+                                                {% if addr.address.address_line2 %}
+                                                    <p>{{ addr.address.address_line2 }}</p>
+                                                {% endif %}
+                                                <p>{{ addr.address.city }}, {{ addr.address.state }} - {{ addr.address.pincode }}</p>
+                                                {% if addr.address.landmark %}
+                                                    <p><small>Landmark: {{ addr.address.landmark }}</small></p>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if addr.receiver_name or addr.receiver_phone %}
+                                                <div class="receiver-info">
+                                                    {% if addr.receiver_name %}
+                                                        <i class="fas fa-user"></i> {{ addr.receiver_name }}
+                                                    {% endif %}
+                                                    {% if addr.receiver_phone %}
+                                                        {% if addr.receiver_name %} | {% endif %}
+                                                        <i class="fas fa-phone"></i> {{ addr.receiver_phone }}
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if addr.address.map_link %}
+                                                <div class="mb-2">
+                                                    <a href="{{ addr.address.map_link }}" target="_blank" class="btn-sm" style="background: #f1f5f9; color: #2A6FB0; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                                        <i class="fas fa-map-marker-alt"></i> View on Map
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="address-actions">
+                                                {% if not addr.is_default %}
+                                                    <form method="post" action="{% url 'accounts:set_default_address' addr.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn-sm btn-default">
+                                                            <i class="fas fa-check-circle"></i> Set Default
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                <a href="{% url 'accounts:edit_address' addr.id %}" class="btn-sm btn-edit">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <button type="button" class="btn-sm btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ addr.id }}">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ addr.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Delete Address</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete this address?</p>
+                                                <p class="text-muted small">{{ addr.address.address_line1 }}, {{ addr.address.city }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <a href="{% url 'accounts:delete_address' addr.id %}" class="btn btn-danger">Delete</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h5>No Addresses Yet</h5>
+                            <p>Add your first address to start shopping</p>
+                            <a href="{% url 'accounts:add_address' %}" class="btn-add">
+                                <i class="fas fa-plus"></i> Add New Address
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">CAP</span>
+                        <span class="logo-accent">Services</span>
+                    </div>
+                    <p>Your trusted partner for computer sales and services.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'store:product_list' %}">Products</a></li>
+                        <li><a href="{% url 'staff:services_list' %}">Services</a></li>
+                        <li><a href="{% url 'orders:order_list' %}">Track Order</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-phone"></i> {{ site_phone }}</li>
+                        <li><i class="fas fa-envelope"></i> {{ site_email }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; {% current_year %} CAP Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        setTimeout(() => { document.querySelector('.loader-wrapper')?.classList.add('hidden'); }, 500);
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (navbar && window.scrollY > 10) navbar.classList.add('scrolled');
+            else if (navbar) navbar.classList.remove('scrolled');
+            
+            const backBtn = document.getElementById('backToTop');
+            if (backBtn && window.scrollY > 300) backBtn.classList.add('show');
+            else if (backBtn) backBtn.classList.remove('show');
+        });
+
+        document.getElementById('backToTop')?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        const toggle = document.getElementById('mobileToggle');
+        const menu = document.getElementById('mobileMenu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => menu.classList.toggle('show'));
+        }
+    </script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

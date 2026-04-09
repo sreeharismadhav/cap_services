@@ -1,0 +1,164 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Payment Successful - CAP Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-animation {
+        animation: scaleUp 0.5s ease;
+    }
+    
+    @keyframes scaleUp {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .order-info {
+        background: #f8fafc;
+        border: 1px solid #eef2f6;
+    }
+    
+    .btn-primary {
+        background: #2A6FB0;
+        border: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a76;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary:hover {
+        transform: translateY(-2px);
+    }
+    
+    .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: #2A6FB0;
+        position: absolute;
+        animation: confettiFall 3s linear forwards;
+    }
+    
+    @keyframes confettiFall {
+        0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    .card {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <div class="success-animation">
+                            <i class="fas fa-check-circle fa-4x text-success"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-3">Payment Successful!</h3>
+                    <p class="text-muted mb-4">Your order has been confirmed</p>
+                    
+                    <div class="order-info bg-light p-3 rounded-3 mb-4">
+                        <div class="row">
+                            <div class="col-6 text-start">
+                                <div class="small text-muted">Order Number</div>
+                                <div class="fw-bold">#{{ order.order_number }}</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="small text-muted">Amount Paid</div>
+                                <div class="fw-bold text-success">₹{{ order.total|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-6 text-start">
+                                <div class="small text-muted">Payment Method</div>
+                                <div class="small">{{ payment.payment_method|default:"UPI" }}</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="small text-muted">Transaction ID</div>
+                                <div class="small text-truncate" style="max-width: 150px;">{{ payment.transaction_id|default:"UPI Payment" }}</div>
+                            </div>
+                        </div>
+                        {% if payment.payment_date %}
+                        <div class="row mt-2">
+                            <div class="col-12 text-center">
+                                <div class="small text-muted">Payment Date</div>
+                                <div class="small">{{ payment.payment_date|date:"M d, Y h:i A" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="fas fa-envelope me-2"></i>
+                        A confirmation email has been sent to <strong>{{ order.user.email }}</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-3 mt-4">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-primary py-3">
+                            <i class="fas fa-eye me-2"></i> View Order Details
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary py-3">
+                            <i class="fas fa-shopping-bag me-2"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple confetti effect
+    function createConfetti() {
+        const colors = ['#2A6FB0', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = Math.random() * 8 + 4 + 'px';
+            confetti.style.height = Math.random() * 8 + 4 + 'px';
+            confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }
+    }
+    
+    // Trigger confetti on load
+    document.addEventListener('DOMContentLoaded', function() {
+        createConfetti();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}Service Requests - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Service Requests</h1>
+    <p>Manage assigned service bookings</p>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom p-0">
+        {% if services %}
+            <div class="service-list">
+                {% for service in services %}
+                    <div class="service-item">
+                        <div class="service-info">
+                            <div class="service-header">
+                                <span class="badge-custom badge-primary">{{ service.device_type }}</span>
+                                <span class="badge-custom badge-{{ service.status|lower }}">{{ service.get_status_display }}</span>
+                            </div>
+                            <h4>Booking #{{ service.booking_number }}</h4>
+                            <p><i class="far fa-user"></i> {{ service.user.full_name }}</p>
+                            <p><i class="fas fa-mobile-alt"></i> {{ service.device_model|default:"No model specified" }}</p>
+                            <p><i class="far fa-calendar-alt"></i> Preferred: {{ service.preferred_date|date:"M j, Y" }} {{ service.preferred_time_slot }}</p>
+                        </div>
+                        <div class="service-actions">
+                            <a href="{% url 'staff:service_detail' service.id %}" class="btn-custom btn-custom-primary">View Details →</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tools"></i>
+                <h4>No service requests</h4>
+                <p>You have no assigned service requests at the moment.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.service-list {
+    display: flex;
+    flex-direction: column;
+}
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.service-item:hover {
+    background: #f8fafc;
+}
+.service-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 8px 0;
+}
+.service-info p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 4px 0;
+}
+.service-header {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+    .service-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

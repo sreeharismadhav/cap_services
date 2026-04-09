@@ -1,0 +1,219 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block title %}Service Details - Staff Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Service Request Details</h1>
+    <p>Booking #{{ service.booking_number }}</p>
+</div>
+
+<div class="card-custom">
+    <div class="card-body-custom">
+        <div class="service-header-info">
+            <div>
+                <span class="badge-custom badge-primary">{{ service.device_type }}</span>
+                <span class="badge-custom badge-{{ service.status|lower }}">{{ service.get_status_display }}</span>
+            </div>
+            {% if service.status == 'ASSIGNED' or service.status == 'IN_PROGRESS' %}
+            <div class="service-actions">
+                <button class="btn-custom btn-custom-primary" onclick="showUpdateModal()">Update Status</button>
+            </div>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <div class="customer-info">
+            <h4>Customer Information</h4>
+            <div class="info-grid">
+                <div><strong>Name:</strong> {{ service.user.full_name }}</div>
+                <div><strong>Email:</strong> {{ service.user.email }}</div>
+                <div><strong>Phone:</strong> {{ service.user.phone|default:"N/A" }}</div>
+            </div>
+        </div>
+
+        <div class="device-info">
+            <h4>Device Information</h4>
+            <div class="info-grid">
+                <div><strong>Device Type:</strong> {{ service.device_type }}</div>
+                <div><strong>Device Model:</strong> {{ service.device_model|default:"N/A" }}</div>
+                <div><strong>Issue Description:</strong></div>
+                <div class="full-width">{{ service.issue_description }}</div>
+            </div>
+        </div>
+
+        <div class="address-info">
+            <h4>Service Address</h4>
+            <div class="info-grid">
+                <div><strong>Address:</strong> {{ service.address_line1 }}, {{ service.city }}, {{ service.state }} - {{ service.pincode }}</div>
+                {% if service.landmark %}<div><strong>Landmark:</strong> {{ service.landmark }}</div>{% endif %}
+                {% if service.map_link %}<div><strong>Map:</strong> <a href="{{ service.map_link }}" target="_blank">View Location</a></div>{% endif %}
+            </div>
+        </div>
+
+        <div class="schedule-info">
+            <h4>Schedule</h4>
+            <div class="info-grid">
+                <div><strong>Preferred Date:</strong> {{ service.preferred_date|date:"M j, Y" }}</div>
+                <div><strong>Preferred Time:</strong> {{ service.preferred_time_slot|default:"Flexible" }}</div>
+            </div>
+        </div>
+
+        {% if service.technician_notes %}
+        <div class="notes-info">
+            <h4>Technician Notes</h4>
+            <p>{{ service.technician_notes }}</p>
+        </div>
+        {% endif %}
+
+        {% if service.final_cost %}
+        <div class="cost-info">
+            <h4>Cost Details</h4>
+            <div class="info-grid">
+                <div><strong>Estimated Cost:</strong> {% if service.estimated_cost %}₹{{ service.estimated_cost|floatformat:2 }}{% else %}Not estimated{% endif %}</div>
+                <div><strong>Final Cost:</strong> ₹{{ service.final_cost|floatformat:2 }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div id="updateModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Update Service Status</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form method="post" action="{% url 'staff:service_update_status' service.id %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control" required>
+                        <option value="">Select status</option>
+                        <option value="ASSIGNED" {% if service.status == 'ASSIGNED' %}selected{% endif %}>Assigned</option>
+                        <option value="IN_PROGRESS" {% if service.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                        <option value="COMPLETED" {% if service.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" class="form-control" rows="4" placeholder="Add notes about this service...">{{ service.technician_notes }}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-custom-outline" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-custom btn-custom-primary">Update Status</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.service-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+.full-width {
+    grid-column: span 2;
+}
+.customer-info, .device-info, .address-info, .schedule-info, .notes-info, .cost-info {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1f1f1f;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.modal-body {
+    padding: 20px;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+}
+.form-group {
+    margin-bottom: 16px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 13px;
+}
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    .full-width {
+        grid-column: span 1;
+    }
+}
+</style>
+
+<script>
+function showUpdateModal() {
+    document.getElementById('updateModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('updateModal').style.display = 'none';
+}
+</script>
+{% endblock %}

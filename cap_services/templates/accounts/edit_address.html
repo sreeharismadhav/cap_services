@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+{% load static %}
+{% load core_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Address - CAP Services</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1f1f1f;
+        }
+        
+        /* Loader */
+        .loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0c10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .loader-wrapper.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        .loader-circle {
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: #6366f1;
+            border-right-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loader-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6366f1;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: #1a1c23;
+            color: #e5e7eb;
+            padding: 8px 0;
+            font-size: 12px;
+        }
+        .top-bar-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .contact-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .contact-info span i {
+            margin-right: 6px;
+            color: #6366f1;
+        }
+        .user-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .top-link {
+            color: #e5e7eb;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .top-link:hover {
+            color: #a5b4fc;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #eef2f6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .logo-text {
+            color: #1f1f1f;
+        }
+        .logo-accent {
+            color: #2A6FB0;
+        }
+        
+        /* Sidebar Styles */
+        .profile-sidebar {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-avatar i {
+            font-size: 3rem;
+            color: #2A6FB0;
+        }
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 0.25rem;
+        }
+        .profile-email {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .sidebar-nav a {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-nav a i {
+            width: 24px;
+            margin-right: 0.5rem;
+            color: #94a3b8;
+        }
+        .sidebar-nav a:hover {
+            background: #f1f5f9;
+            color: #2A6FB0;
+        }
+        .sidebar-nav a.active {
+            background: #2A6FB0;
+            color: white;
+        }
+        .sidebar-nav a.active i {
+            color: white;
+        }
+        .sidebar-nav a.logout {
+            color: #ef4444;
+            margin-top: 1rem;
+            border-top: 1px solid #eef2f6;
+            border-radius: 0;
+            padding-top: 1rem;
+        }
+        .sidebar-nav a.logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .form-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            background: #fafbfc;
+        }
+        .form-card-header h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 0.25rem;
+        }
+        .form-card-header p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .form-card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Form Elements */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1f1f1f;
+            margin-bottom: 0.5rem;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: white;
+        }
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: #2A6FB0;
+            box-shadow: 0 0 0 3px rgba(42,111,176,0.1);
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-check-input {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin: 0;
+            accent-color: #2A6FB0;
+        }
+        .form-check-label {
+            font-size: 0.85rem;
+            color: #475569;
+            cursor: pointer;
+        }
+        .text-danger {
+            color: #dc2626 !important;
+        }
+        .text-muted {
+            color: #64748b !important;
+        }
+        hr {
+            border-color: #eef2f6;
+            margin: 1.5rem 0;
+        }
+        
+        /* Buttons */
+        .btn-save {
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-save:hover {
+            background: #1e4a76;
+            transform: translateY(-2px);
+        }
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+        
+        /* Tips Card */
+        .tips-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+        .tips-card h6 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2A6FB0;
+            margin-bottom: 0.75rem;
+        }
+        .tips-card ul {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+        .tips-card li {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        .tips-card li i {
+            font-size: 0.7rem;
+            margin-right: 0.5rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1c23;
+            color: #e5e7eb;
+            margin-top: 60px;
+        }
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            padding: 50px 0 30px;
+        }
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        .footer-logo .logo-text {
+            color: #e5e7eb;
+        }
+        .footer-logo .logo-accent {
+            color: #6366f1;
+        }
+        .footer-section p {
+            color: #9ca3af;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e5e7eb;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .social-links a:hover {
+            background: #6366f1;
+            transform: translateY(-2px);
+        }
+        .footer-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+        .footer-section ul li a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .footer-section ul li a:hover {
+            color: #a5b4fc;
+        }
+        .footer-section .contact-info li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 20px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 99;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .back-to-top.show {
+            display: flex;
+        }
+        .back-to-top:hover {
+            background: #1e4a76;
+            transform: translateY(-3px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-sidebar {
+                margin-bottom: 1.5rem;
+            }
+            .form-card-header h4 {
+                font-size: 1.1rem;
+            }
+            .btn-save, .btn-cancel {
+                flex: 1;
+                justify-content: center;
+            }
+            .top-bar-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .contact-info {
+                justify-content: center;
+            }
+            .user-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-wrapper">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-logo">CAP</div>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-content">
+                <div class="contact-info">
+                    <span><i class="fas fa-phone"></i> {{ site_phone }}</span>
+                    <span><i class="fas fa-envelope"></i> {{ site_email }}</span>
+                    <span><i class="fas fa-clock"></i> Mon-Sat: 9AM - 8PM</span>
+                </div>
+                <div class="user-actions">
+                    {% if request.session.user_id %}
+                        <span class="top-link"><i class="fas fa-user"></i> {{ request.session.user_email }}</span>
+                        <a href="{% url 'accounts:logout' %}" class="top-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="top-link"><i class="fas fa-user"></i> Login</a>
+                        <a href="{% url 'accounts:register' %}" class="top-link"><i class="fas fa-user-plus"></i> Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="{% url 'core:home' %}" class="logo">
+                    <span class="logo-text">CAP</span>
+                    <span class="logo-accent">Services</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- Sidebar -->
+                <div class="col-md-4 col-lg-3">
+                    <div class="profile-sidebar">
+                        <div class="p-4 text-center">
+                            <div class="profile-avatar">
+                                {% if profile.profile_pic %}
+                                    <img src="{{ profile.profile_pic.url }}" alt="{{ user.full_name }}">
+                                {% else %}
+                                    <i class="fas fa-user-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="profile-name">{{ user.full_name|default:user.email }}</div>
+                            <div class="profile-email">{{ user.email }}</div>
+                        </div>
+                        <div class="sidebar-nav p-4 pt-0">
+                            <a href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="{% url 'accounts:addresses' %}" class="active">
+                                <i class="fas fa-map-marker-alt"></i> Addresses
+                            </a>
+                            <a href="{% url 'orders:order_list' %}">
+                                <i class="fas fa-shopping-bag"></i> My Orders
+                            </a>
+                            <a href="{% url 'staff:services_list' %}">
+                                <i class="fas fa-tools"></i> My Services
+                            </a>
+                            <a href="{% url 'accounts:logout' %}" class="logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="col-md-8 col-lg-9">
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <h4><i class="fas fa-edit me-2"></i> Edit Address</h4>
+                            <p>Update your address details</p>
+                        </div>
+                        <div class="form-card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+                                        <input type="text" name="address_line1" class="form-control" value="{{ address.address_line1 }}" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Address Line 2 <span class="text-muted">(Optional)</span></label>
+                                        <input type="text" name="address_line2" class="form-control" value="{{ address.address_line2 }}">
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">City <span class="text-danger">*</span></label>
+                                        <input type="text" name="city" class="form-control" value="{{ address.city }}" required>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">State <span class="text-danger">*</span></label>
+                                        <input type="text" name="state" class="form-control" value="{{ address.state }}" required>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">PIN Code <span class="text-danger">*</span></label>
+                                        <input type="text" name="pincode" class="form-control" value="{{ address.pincode }}" maxlength="6" pattern="[0-9]{6}" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Landmark <span class="text-muted">(Optional)</span></label>
+                                        <input type="text" name="landmark" class="form-control" value="{{ address.landmark }}">
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Google Maps Link <span class="text-muted">(Optional)</span></label>
+                                        <input type="url" name="map_link" class="form-control" value="{{ address.map_link }}">
+                                        <small class="text-muted"><i class="fas fa-info-circle"></i> Paste the Google Maps link for exact location</small>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Receiver Name <span class="text-muted">(Optional)</span></label>
+                                        <input type="text" name="receiver_name" class="form-control" value="{{ address.receiver_name }}">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label">Receiver Phone <span class="text-muted">(Optional)</span></label>
+                                        <input type="tel" name="receiver_phone" class="form-control" value="{{ address.receiver_phone }}">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Type <span class="text-danger">*</span></label>
+                                        <select name="address_type" class="form-select" required>
+                                            <option value="HOME" {% if address.address_type == 'HOME' %}selected{% endif %}>🏠 Home</option>
+                                            <option value="OFFICE" {% if address.address_type == 'OFFICE' %}selected{% endif %}>🏢 Office</option>
+                                            <option value="OTHER" {% if address.address_type == 'OTHER' %}selected{% endif %}>📍 Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="is_default" id="is_default" class="form-check-input" {% if address.is_default %}checked{% endif %}>
+                                            <label class="form-check-label" for="is_default">
+                                                <i class="fas fa-star text-warning"></i> Set as default address
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 d-flex gap-3">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fas fa-save"></i> Update Address
+                                    </button>
+                                    <a href="{% url 'accounts:addresses' %}" class="btn-cancel">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Tips Card -->
+                    <div class="tips-card">
+                        <h6><i class="fas fa-lightbulb me-2"></i> Delivery Tips</h6>
+                        <ul>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Enter complete address with house/flat number for accurate delivery</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Adding a landmark helps delivery staff find your location easily</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Google Maps link helps with precise navigation</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Default address will be preselected during checkout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">CAP</span>
+                        <span class="logo-accent">Services</span>
+                    </div>
+                    <p>Your trusted partner for computer sales and services.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'store:product_list' %}">Products</a></li>
+                        <li><a href="{% url 'staff:services_list' %}">Services</a></li>
+                        <li><a href="{% url 'orders:order_list' %}">Track Order</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-phone"></i> {{ site_phone }}</li>
+                        <li><i class="fas fa-envelope"></i> {{ site_email }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; {% current_year %} CAP Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        setTimeout(() => { document.querySelector('.loader-wrapper')?.classList.add('hidden'); }, 500);
+
+        window.addEventListener('scroll', () => {
+            const backBtn = document.getElementById('backToTop');
+            if (backBtn && window.scrollY > 300) backBtn.classList.add('show');
+            else if (backBtn) backBtn.classList.remove('show');
+        });
+
+        document.getElementById('backToTop')?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{% if category %}Edit Category{% else %}Add Category{% endif %} - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">{% if category %}Edit Category{% else %}Add New Category{% endif %}</h1>
+        <p class="admin-page-subtitle">{% if category %}Update category details{% else %}Create a new product category{% endif %}</p>
+    </div>
+    <a href="{% url 'admin_panel:categories' %}" class="admin-back-link">
+        <i class="fas fa-arrow-left"></i> Back to Categories
+    </a>
+</div>
+
+<div class="admin-form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="admin-form-layout">
+            <!-- Left Column -->
+            <div class="admin-form-main">
+                <div class="admin-form-section">
+                    <h3 class="admin-section-title">
+                        <i class="fas fa-info-circle"></i> Basic Information
+                    </h3>
+                    
+                    <div class="admin-form-field">
+                        <label class="admin-field-label">Category Name <span class="admin-required">*</span></label>
+                        <input type="text" name="name" class="admin-field-input" value="{{ category.name|default:'' }}" required>
+                        <div class="admin-field-hint">This will be displayed to customers</div>
+                    </div>
+                    
+                    <div class="admin-form-field">
+                        <label class="admin-field-label">Parent Category</label>
+                        <select name="parent" class="admin-field-select">
+                            <option value="">None (Top Level Category)</option>
+                            {% for cat in categories %}
+                                {% if category and category.id != cat.id %}
+                                    <option value="{{ cat.id }}" {% if category.parent.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="admin-field-hint">Select parent category if this is a subcategory</div>
+                    </div>
+                    
+                    <div class="admin-form-field">
+                        <label class="admin-field-label">Display Order</label>
+                        <input type="number" name="order" class="admin-field-input" value="{{ category.order|default:0 }}">
+                        <div class="admin-field-hint">Lower numbers appear first</div>
+                    </div>
+                    
+                    <div class="admin-form-field">
+                        <label class="admin-field-label">Description</label>
+                        <textarea name="description" class="admin-field-textarea" rows="5" placeholder="Enter category description...">{{ category.description|default:'' }}</textarea>
+                        <div class="admin-field-hint">Brief description of the category (optional)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="admin-form-sidebar">
+                <div class="admin-form-section">
+                    <h3 class="admin-section-title">
+                        <i class="fas fa-image"></i> Category Image
+                    </h3>
+                    
+                    <div class="admin-image-upload">
+                        <div class="admin-image-preview">
+                            {% if category and category.image %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" id="imagePreview">
+                            {% else %}
+                                <i class="fas fa-folder-open" id="imagePreview"></i>
+                            {% endif %}
+                        </div>
+                        <div class="admin-file-input">
+                            <input type="file" name="image" id="categoryImage" accept="image/*" style="display: none;">
+                            <button type="button" class="admin-upload-btn" onclick="document.getElementById('categoryImage').click()">
+                                <i class="fas fa-cloud-upload-alt"></i> Choose Image
+                            </button>
+                            {% if category and category.image %}
+                                <button type="button" class="admin-remove-btn" onclick="removeImage()">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="admin-field-hint">Recommended size: 400x400px. Max 2MB.</div>
+                    </div>
+                </div>
+                
+                <div class="admin-form-section">
+                    <h3 class="admin-section-title">
+                        <i class="fas fa-chart-line"></i> Category Stats
+                    </h3>
+                    <div class="admin-stats-list">
+                        <div class="admin-stat-item">
+                            <span>Products in this category:</span>
+                            <strong>{{ category.products.count|default:0 }}</strong>
+                        </div>
+                        <div class="admin-stat-item">
+                            <span>Subcategories:</span>
+                            <strong>{{ category.children.count|default:0 }}</strong>
+                        </div>
+                        <div class="admin-stat-item">
+                            <span>Slug:</span>
+                            <code>{{ category.slug|default:"Will be auto-generated" }}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-form-footer">
+            <a href="{% url 'admin_panel:categories' %}" class="admin-btn-secondary">Cancel</a>
+            <button type="submit" class="admin-btn-primary">
+                <i class="fas fa-save"></i> {% if category %}Update Category{% else %}Create Category{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('categoryImage')?.addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (preview.tagName === 'IMG') {
+                preview.src = e.target.result;
+            } else {
+                const img = document.createElement('img');
+                img.id = 'imagePreview';
+                img.src = e.target.result;
+                preview.parentNode.replaceChild(img, preview);
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+function removeImage() {
+    if(confirm('Remove this image?')) {
+        document.getElementById('categoryImage').value = '';
+        const preview = document.getElementById('imagePreview');
+        if (preview.tagName === 'IMG') {
+            const icon = document.createElement('i');
+            icon.id = 'imagePreview';
+            icon.className = 'fas fa-folder-open';
+            preview.parentNode.replaceChild(icon, preview);
+        }
+    }
+}
+</script>
+
+<style>
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+    margin: 0;
+}
+.admin-back-link {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 10px;
+    padding: 8px 18px;
+    color: #a5b4fc;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.admin-back-link:hover {
+    background: rgba(99,102,241,0.2);
+}
+.admin-form-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    padding: 28px;
+}
+.admin-form-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 28px;
+}
+.admin-form-section {
+    background: #0f1115;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+.admin-form-section:last-child {
+    margin-bottom: 0;
+}
+.admin-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a30;
+}
+.admin-section-title i {
+    color: #6366f1;
+    margin-right: 8px;
+}
+.admin-form-field {
+    margin-bottom: 20px;
+}
+.admin-form-field:last-child {
+    margin-bottom: 0;
+}
+.admin-field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+.admin-required {
+    color: #f87171;
+}
+.admin-field-input,
+.admin-field-select {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+.admin-field-input:focus,
+.admin-field-select:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+.admin-field-textarea {
+    width: 100%;
+    padding: 12px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+.admin-field-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+.admin-field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+.admin-image-upload {
+    text-align: center;
+}
+.admin-image-preview {
+    width: 200px;
+    height: 200px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 16px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.admin-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.admin-image-preview i {
+    font-size: 64px;
+    color: #6366f1;
+}
+.admin-file-input {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.admin-upload-btn,
+.admin-remove-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    border: none;
+}
+.admin-upload-btn {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #a5b4fc;
+}
+.admin-upload-btn:hover {
+    background: rgba(99,102,241,0.25);
+}
+.admin-remove-btn {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #f87171;
+}
+.admin-remove-btn:hover {
+    background: rgba(239,68,68,0.25);
+}
+.admin-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.admin-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #2a2a30;
+}
+.admin-stat-item:last-child {
+    border-bottom: none;
+}
+.admin-stat-item span {
+    font-size: 13px;
+    color: #9ca3af;
+}
+.admin-stat-item strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+.admin-stat-item code {
+    font-size: 12px;
+    color: #a5b4fc;
+    background: rgba(99,102,241,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.admin-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #2a2a30;
+}
+.admin-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.admin-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+.admin-btn-secondary {
+    background: #2a2a30;
+    color: #e5e7eb;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.admin-btn-secondary:hover {
+    background: #3a3a40;
+}
+@media (max-width: 992px) {
+    .admin-form-layout {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .admin-form-card {
+        padding: 20px;
+    }
+    .admin-form-section {
+        padding: 18px;
+    }
+    .admin-form-footer {
+        flex-direction: column-reverse;
+    }
+    .admin-btn-primary,
+    .admin-btn-secondary {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

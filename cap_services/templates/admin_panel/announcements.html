@@ -1,0 +1,540 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Announcements - {{ site_name }} Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+    <div>
+        <h1 class="admin-page-title">Announcements</h1>
+        <p class="admin-page-subtitle">Manage system announcements and notifications</p>
+    </div>
+    <a href="{% url 'admin_panel:create_announcement' %}" class="admin-btn-primary">
+        <i class="fas fa-plus"></i> Create Announcement
+    </a>
+</div>
+
+<div class="admin-form-card">
+    <div class="admin-table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Target Audience</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for announcement in announcements %}
+                <tr class="admin-table-row">
+                    <td data-label="Title">
+                        <strong>{{ announcement.title }}</strong>
+                        <div class="admin-title-preview">{{ announcement.content|truncatechars:60 }}</div>
+                    </td>
+                    <td data-label="Type">
+                        <span class="admin-badge admin-badge-{{ announcement.announcement_type }}">
+                            {% if announcement.announcement_type == 'danger' %}
+                                <i class="fas fa-exclamation-triangle"></i> Critical
+                            {% elif announcement.announcement_type == 'warning' %}
+                                <i class="fas fa-clock"></i> Warning
+                            {% elif announcement.announcement_type == 'success' %}
+                                <i class="fas fa-check-circle"></i> Success
+                            {% else %}
+                                <i class="fas fa-info-circle"></i> Info
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td data-label="Target Audience">
+                        <div class="admin-target-roles">
+                            {% for role in announcement.target_roles %}
+                                <span class="admin-role-tag">
+                                    {% if role == 'ADMIN' %}👑 Admin
+                                    {% elif role == 'STAFF' %}👔 Staff
+                                    {% else %}👤 Customer{% endif %}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td data-label="Start Date">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ announcement.start_date|date:"M j, Y" }}
+                        <span class="admin-time">{{ announcement.start_date|date:"H:i" }}</span>
+                    </td>
+                    <td data-label="End Date">
+                        <i class="fas fa-calendar-check"></i>
+                        {{ announcement.end_date|date:"M j, Y" }}
+                        <span class="admin-time">{{ announcement.end_date|date:"H:i" }}</span>
+                    </td>
+                    <td data-label="Status">
+                        {% if announcement.is_current %}
+                            <span class="admin-status-badge admin-status-active">
+                                <i class="fas fa-circle"></i> Active
+                            </span>
+                        {% else %}
+                            <span class="admin-status-badge admin-status-expired">
+                                <i class="fas fa-circle"></i> Expired
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions">
+                        <div class="admin-action-buttons">
+                            <a href="{% url 'admin_panel:edit_announcement' announcement.id %}" class="admin-action-btn admin-edit-btn" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'admin_panel:delete_announcement' announcement.id %}" class="admin-action-btn admin-delete-btn" onclick="return confirm('Delete this announcement?')" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="admin-table-row">
+                    <td colspan="7" class="admin-empty-cell">
+                        <div class="admin-empty-state">
+                            <div class="admin-empty-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <h3>No Announcements</h3>
+                            <p>Create your first announcement to notify customers and staff</p>
+                            <a href="{% url 'admin_panel:create_announcement' %}" class="admin-btn-primary">
+                                <i class="fas fa-plus"></i> Create Announcement
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if announcements.has_other_pages %}
+    <div class="admin-pagination">
+        <div class="admin-pagination-info">
+            Showing {{ announcements.start_index }} to {{ announcements.end_index }} of {{ announcements.paginator.count }} announcements
+        </div>
+        <ul class="admin-pagination-list">
+            {% if announcements.has_previous %}
+                <li>
+                    <a href="?page={{ announcements.previous_page_number }}" class="admin-pagination-link">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in announcements.paginator.page_range %}
+                {% if announcements.number == num %}
+                    <li><span class="admin-pagination-link active">{{ num }}</span></li>
+                {% elif num > announcements.number|add:'-3' and num < announcements.number|add:'3' %}
+                    <li><a href="?page={{ num }}" class="admin-pagination-link">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if announcements.has_next %}
+                <li>
+                    <a href="?page={{ announcements.next_page_number }}" class="admin-pagination-link">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Page Header */
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 6px;
+}
+.admin-page-subtitle {
+    color: #9ca3af;
+    font-size: 14px;
+}
+.admin-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.admin-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    color: white;
+}
+
+/* Form Card */
+.admin-form-card {
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* Table Styles */
+.admin-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+.admin-table thead {
+    background: #0f1115;
+}
+.admin-table th {
+    text-align: left;
+    padding: 16px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #2a2a30;
+}
+.admin-table td {
+    padding: 18px 20px;
+    font-size: 14px;
+    color: #e5e7eb;
+    border-bottom: 1px solid #2a2a30;
+    vertical-align: middle;
+}
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+.admin-table tr:hover td {
+    background: #1f2128;
+}
+.admin-table-row {
+    transition: all 0.2s;
+}
+
+/* Title Cell */
+.admin-title-preview {
+    font-size: 12px;
+    color: #9ca3af;
+    max-width: 300px;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+
+/* Badges */
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.admin-badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+.admin-badge-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+.admin-badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+.admin-badge-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+/* Target Roles */
+.admin-target-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.admin-role-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #2a2a30;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+/* Date Cell */
+.admin-date-cell {
+    white-space: nowrap;
+}
+.admin-date-cell i {
+    color: #6366f1;
+    margin-right: 6px;
+    font-size: 12px;
+}
+.admin-time {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Status Badge */
+.admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.admin-status-badge i {
+    font-size: 8px;
+}
+.admin-status-active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+.admin-status-expired {
+    background: rgba(107, 114, 128, 0.15);
+    color: #9ca3af;
+}
+
+/* Action Buttons */
+.admin-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.admin-action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.admin-edit-btn {
+    background: rgba(99, 102, 241, 0.1);
+    color: #a5b4fc;
+}
+.admin-edit-btn:hover {
+    background: #6366f1;
+    color: white;
+}
+.admin-delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+.admin-delete-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Empty State */
+.admin-empty-cell {
+    text-align: center;
+}
+.admin-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+.admin-empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #1a1c23;
+    border: 1px solid #2a2a30;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.admin-empty-icon i {
+    font-size: 40px;
+    color: #6366f1;
+}
+.admin-empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 8px;
+}
+.admin-empty-state p {
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+/* Pagination */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-top: 1px solid #2a2a30;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-pagination-info {
+    font-size: 13px;
+    color: #9ca3af;
+}
+.admin-pagination-list {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+.admin-pagination-list li {
+    display: inline-block;
+}
+.admin-pagination-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #2a2a30;
+    border-radius: 8px;
+    color: #e5e7eb;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.admin-pagination-link:hover {
+    background: #6366f1;
+    color: white;
+}
+.admin-pagination-link.active {
+    background: #6366f1;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .admin-table th,
+    .admin-table td {
+        padding: 12px 16px;
+    }
+    .admin-title-preview {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .admin-pagination {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-pagination-list {
+        justify-content: center;
+    }
+    
+    /* Mobile card layout */
+    .admin-table th {
+        display: none;
+    }
+    
+    .admin-table tr {
+        display: block;
+        margin-bottom: 16px;
+        border: 1px solid #2a2a30;
+        border-radius: 12px;
+    }
+    
+    .admin-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(99,102,241,0.1);
+    }
+    
+    .admin-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .admin-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #a5b4fc;
+        font-size: 12px;
+        margin-right: 16px;
+        min-width: 120px;
+    }
+    
+    .admin-date-cell {
+        white-space: normal;
+    }
+    
+    .admin-title-preview {
+        max-width: 100%;
+    }
+    
+    .admin-action-buttons {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-page-title {
+        font-size: 20px;
+    }
+    
+    .admin-table td {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .admin-table td::before {
+        margin-bottom: 4px;
+    }
+    
+    .admin-action-buttons {
+        justify-content: flex-start;
+    }
+    
+    .admin-pagination-link {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+}
+</style>
+{% endblock %}

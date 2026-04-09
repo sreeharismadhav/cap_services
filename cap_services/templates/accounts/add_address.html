@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+{% load static %}
+{% load core_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Address - CAP Services</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* Sidebar Styles */
+        .profile-sidebar {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-avatar i {
+            font-size: 3rem;
+            color: #2A6FB0;
+        }
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 0.25rem;
+        }
+        .profile-email {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .sidebar-nav a {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-nav a i {
+            width: 24px;
+            margin-right: 0.5rem;
+            color: #94a3b8;
+        }
+        .sidebar-nav a:hover {
+            background: #f1f5f9;
+            color: #2A6FB0;
+        }
+        .sidebar-nav a.active {
+            background: #2A6FB0;
+            color: white;
+        }
+        .sidebar-nav a.active i {
+            color: white;
+        }
+        .sidebar-nav a.logout {
+            color: #ef4444;
+            margin-top: 1rem;
+            border-top: 1px solid #eef2f6;
+            border-radius: 0;
+            padding-top: 1rem;
+        }
+        .sidebar-nav a.logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .form-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            background: #fafbfc;
+        }
+        .form-card-header h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 0.25rem;
+        }
+        .form-card-header p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .form-card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Form Elements */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1f1f1f;
+            margin-bottom: 0.5rem;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: white;
+        }
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: #2A6FB0;
+            box-shadow: 0 0 0 3px rgba(42,111,176,0.1);
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-check-input {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin: 0;
+            accent-color: #2A6FB0;
+        }
+        .form-check-label {
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        
+        /* Buttons */
+        .btn-save {
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-save:hover {
+            background: #1e4a76;
+            transform: translateY(-2px);
+        }
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+        
+        /* Tips Card */
+        .tips-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+        .tips-card h6 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2A6FB0;
+            margin-bottom: 0.75rem;
+        }
+        .tips-card ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+        .tips-card li {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        
+        hr {
+            border-color: #eef2f6;
+            margin: 1.5rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .profile-sidebar {
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-wrapper">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-logo">CAP</div>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-content">
+                <div class="contact-info">
+                    <span><i class="fas fa-phone"></i> {{ site_phone }}</span>
+                    <span><i class="fas fa-envelope"></i> {{ site_email }}</span>
+                    <span><i class="fas fa-clock"></i> Mon-Sat: 9AM - 8PM</span>
+                </div>
+                <div class="user-actions">
+                    {% if request.session.user_id %}
+                        <span class="top-link"><i class="fas fa-user"></i> {{ request.session.user_email }}</span>
+                        <a href="{% url 'accounts:logout' %}" class="top-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="top-link"><i class="fas fa-user"></i> Login</a>
+                        <a href="{% url 'accounts:register' %}" class="top-link"><i class="fas fa-user-plus"></i> Register</a>
+                    {% endif %}
+                    <a href="#" class="top-link"><i class="fas fa-headset"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="{% url 'core:home' %}" class="logo">
+                    <span class="logo-text">CAP</span>
+                    <span class="logo-accent">Services</span>
+                </a>
+
+                <div class="search-wrapper">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <form action="{% url 'store:search' %}" method="get" style="flex: 1; display: flex;">
+                            <input type="text" name="q" placeholder="Search for computers, accessories, services..." value="{{ search_query|default:'' }}">
+                            <button type="submit" class="search-btn">Search</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+                    <div class="action-item" id="accountDropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Account</span>
+                        <div class="dropdown-menu">
+                            {% if request.session.user_id %}
+                                <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                                <a href="{% url 'orders:order_list' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+                                <a href="#"><i class="fas fa-heart"></i> Wishlist</a>
+                                <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                                <a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-item">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist</span>
+                        <span class="badge wishlist-badge">0</span>
+                    </div>
+                    <a href="{% url 'orders:cart_detail' %}" class="action-item cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Cart</span>
+                        <span class="badge cart-badge">{{ cart_count|default:0 }}</span>
+                    </a>
+                </div>
+
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="{% url 'store:product_list' %}">Products</a>
+                <a href="{% url 'staff:services_list' %}">Services</a>
+                <a href="#">Support</a>
+                <hr>
+                {% if not request.session.user_id %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                    <a href="{% url 'accounts:register' %}">Sign Up</a>
+                {% else %}
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
+                    <a href="{% url 'orders:order_list' %}">Orders</a>
+                    <a href="{% url 'accounts:logout' %}">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- Sidebar -->
+                <div class="col-md-4 col-lg-3">
+                    <div class="profile-sidebar">
+                        <div class="p-4 text-center">
+                            <div class="profile-avatar">
+                                {% if profile.profile_pic %}
+                                    <img src="{{ profile.profile_pic.url }}" alt="{{ user.full_name }}">
+                                {% else %}
+                                    <i class="fas fa-user-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="profile-name">{{ user.full_name|default:user.email }}</div>
+                            <div class="profile-email">{{ user.email }}</div>
+                        </div>
+                        <div class="sidebar-nav p-4 pt-0">
+                            <a href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="{% url 'accounts:addresses' %}">
+                                <i class="fas fa-map-marker-alt"></i> Addresses
+                            </a>
+                            <a href="{% url 'orders:order_list' %}">
+                                <i class="fas fa-shopping-bag"></i> My Orders
+                            </a>
+                            <a href="{% url 'staff:services_list' %}">
+                                <i class="fas fa-tools"></i> My Services
+                            </a>
+                            <a href="{% url 'accounts:logout' %}" class="logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="col-md-8 col-lg-9">
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <h4>Add New Address</h4>
+                            <p>Enter your delivery address details</p>
+                        </div>
+                        <div class="form-card-body">
+                            <form method="post" action="{% url 'accounts:add_address' %}">
+                                {% csrf_token %}
+                                
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Address Line 1 *</label>
+                                        <input type="text" name="address_line1" class="form-control" placeholder="House/Flat No., Building Name" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Address Line 2</label>
+                                        <input type="text" name="address_line2" class="form-control" placeholder="Street, Area (Optional)">
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">City *</label>
+                                        <input type="text" name="city" class="form-control" placeholder="City" required>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">State *</label>
+                                        <input type="text" name="state" class="form-control" placeholder="State" required>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label">PIN Code *</label>
+                                        <input type="text" name="pincode" class="form-control" placeholder="6-digit PIN" maxlength="6" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Landmark</label>
+                                        <input type="text" name="landmark" class="form-control" placeholder="Nearby landmark (Optional)">
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label class="form-label">Google Maps Link</label>
+                                        <input type="url" name="map_link" class="form-control" placeholder="https://maps.google.com/... (Optional)">
+                                        <small class="text-muted">Paste the Google Maps link for exact location</small>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Receiver Name</label>
+                                        <input type="text" name="receiver_name" class="form-control" placeholder="Name of person receiving (Optional)">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label">Receiver Phone</label>
+                                        <input type="tel" name="receiver_phone" class="form-control" placeholder="Alternate phone number (Optional)">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Type *</label>
+                                        <select name="address_type" class="form-select" required>
+                                            <option value="HOME">Home</option>
+                                            <option value="OFFICE">Office</option>
+                                            <option value="OTHER">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="is_default" id="is_default" class="form-check-input">
+                                            <label class="form-check-label" for="is_default">
+                                                Set as default address
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 d-flex gap-3">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fas fa-save"></i> Save Address
+                                    </button>
+                                    <a href="{% url 'accounts:addresses' %}" class="btn-cancel">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Tips Card -->
+                    <div class="tips-card">
+                        <h6><i class="fas fa-lightbulb me-2"></i> Delivery Tips</h6>
+                        <ul>
+                            <li>Enter complete address with house/flat number for accurate delivery</li>
+                            <li>Adding a landmark helps delivery staff find your location easily</li>
+                            <li>Google Maps link helps with precise navigation</li>
+                            <li>Default address will be preselected during checkout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">CAP</span>
+                        <span class="logo-accent">Services</span>
+                    </div>
+                    <p>Your trusted partner for computer sales and services.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'store:product_list' %}">Products</a></li>
+                        <li><a href="{% url 'staff:services_list' %}">Services</a></li>
+                        <li><a href="{% url 'orders:order_list' %}">Track Order</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-phone"></i> {{ site_phone }}</li>
+                        <li><i class="fas fa-envelope"></i> {{ site_email }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; {% current_year %} CAP Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        setTimeout(() => { document.querySelector('.loader-wrapper')?.classList.add('hidden'); }, 500);
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (navbar && window.scrollY > 10) navbar.classList.add('scrolled');
+            else if (navbar) navbar.classList.remove('scrolled');
+            
+            const backBtn = document.getElementById('backToTop');
+            if (backBtn && window.scrollY > 300) backBtn.classList.add('show');
+            else if (backBtn) backBtn.classList.remove('show');
+        });
+
+        document.getElementById('backToTop')?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        const toggle = document.getElementById('mobileToggle');
+        const menu = document.getElementById('mobileMenu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => menu.classList.toggle('show'));
+        }
+    </script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
