@@ -4,12 +4,342 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>{% block title %}{{ site_name }} - Computer Sales & Services{% endblock %}</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* Override any conflicting styles */
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .logo {
+            flex-shrink: 0;
+        }
+        
+        .search-wrapper {
+            flex: 1;
+            max-width: 500px;
+        }
+        
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-container form {
+            display: flex;
+            width: 100%;
+        }
+        
+        .search-container input {
+            flex: 1;
+            padding: 12px 16px 12px 45px;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px 0 0 50px;
+            outline: none;
+        }
+        
+        .search-container .search-btn {
+            padding: 12px 20px;
+            background: #2A6FB0;
+            color: white;
+            border: none;
+            border-radius: 0 50px 50px 0;
+            cursor: pointer;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            z-index: 1;
+        }
+        
+        /* Nav Actions - Profile on the left side */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #1f1f1f;
+            background: transparent;
+        }
+
+        .action-item:hover {
+            background: #f1f5f9;
+        }
+
+        .action-item.cart {
+            background: #2A6FB0;
+            color: white;
+        }
+
+        .action-item.cart:hover {
+            background: #1e4a76;
+        }
+
+        .account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            color: inherit;
+            width: 100%;
+        }
+
+        .badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Dropdown Styles - Aligned to Left */
+        #accountDropdown {
+            position: relative;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: auto;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            min-width: 220px;
+            display: none !important;
+            z-index: 9999;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .dropdown-menu.show {
+            display: block !important;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            color: #1f1f1f;
+            text-decoration: none;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-menu a:hover {
+            background: #f8fafc;
+        }
+        
+        .dropdown-menu hr {
+            margin: 4px 0;
+            border-color: #eef2f6;
+        }
+
+        /* Base Responsive Fixes */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .top-bar-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            .contact-info {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .user-actions {
+                justify-content: center;
+            }
+            .nav-actions {
+                gap: 4px;
+            }
+            .action-item span {
+                display: none;
+            }
+            .action-item {
+                padding: 8px 10px;
+            }
+            .logo {
+                font-size: 22px;
+            }
+            .dropdown-menu {
+                left: -10px;
+                min-width: 200px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .search-wrapper {
+                order: 3;
+                width: 100%;
+                max-width: 100%;
+                margin-top: 15px;
+            }
+            .category-nav-list {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 10px;
+            }
+            .category-nav-list li {
+                display: inline-block;
+                float: none;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .footer-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            .footer-links {
+                justify-content: center;
+            }
+            .social-links {
+                justify-content: center;
+            }
+            .cart-sidebar {
+                width: 85%;
+            }
+        }
+
+        /* Top Bar Styles */
+        .top-bar {
+            background: #1a1c23;
+            color: #e5e7eb;
+            padding: 8px 0;
+            font-size: 12px;
+        }
+        
+        .top-bar-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .contact-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .contact-info span i {
+            margin-right: 6px;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .top-link {
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+        
+        .top-link:hover {
+            color: #a5b4fc;
+        }
+        
+        /* Mobile Menu */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .mobile-menu {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            padding: 15px 0;
+            border-top: 1px solid #eef2f6;
+        }
+        
+        .mobile-menu.show {
+            display: flex;
+        }
+        
+        .mobile-menu a {
+            padding: 10px 0;
+            color: #1f1f1f;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -57,210 +387,66 @@
                 <div class="search-wrapper">
                     <div class="search-container">
                         <i class="fas fa-search search-icon"></i>
-                        <form action="{% url 'store:search' %}" method="get" style="flex: 1; display: flex;">
+                        <form action="{% url 'store:search' %}" method="get">
                             <input type="text" name="q" placeholder="Search for computers, accessories, services..." value="{{ search_query|default:'' }}">
-                            <button type="submit" class="search-btn">Search</button>
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                                <span>Search</span>
+                            </button>
                         </form>
                     </div>
                 </div>
 
                 <div class="nav-actions">
-    <div class="action-item" id="accountDropdown">
-        <button class="account-btn" onclick="toggleDropdown()">
-            <i class="fas fa-user-circle"></i>
-            <span>Account</span>
-            <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="dropdown-menu" id="dropdownMenu">
-            {% if request.session.user_id %}
-                {% if request.session.user_role == 'ADMIN' %}
-                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
-                    <a href="{% url 'admin_panel:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                    <hr>
-                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                {% elif request.session.user_role == 'STAFF' %}
-                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
-                    <a href="{% url 'staff:dashboard_redirect' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                    <a href="{% url 'staff:services_list' %}"><i class="fas fa-tasks"></i> Services</a>
-                    <hr>
-                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                {% else %}
-                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
-                    <a href="{% url 'orders:order_list' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
-                    <a href="{% url 'store:my_bookings' %}"><i class="fas fa-tools"></i> My Bookings</a>
-                    <a href="#"><i class="fas fa-heart"></i> Wishlist</a>
-                    <hr>
-                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                {% endif %}
-            {% else %}
-                <a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
-                <a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus"></i> Register</a>
-            {% endif %}
-        </div>
-    </div>
-    
-    {% if request.session.user_role == "CUSTOMER" %}
-    <div class="action-item">
-        <i class="fas fa-heart"></i>
-        <span>Wishlist</span>
-        <span class="badge wishlist-badge">0</span>
-    </div>
-    <a href="{% url 'orders:cart_detail' %}" class="action-item cart">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Cart</span>
-        <span class="badge cart-badge">{{ cart_count }}</span>
-    </a>
-    {% endif %}
-</div>
-
-<style>
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.action-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 40px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: #1f1f1f;
-}
-
-.action-item:hover {
-    background: #f1f5f9;
-}
-
-.action-item.cart {
-    background: #2A6FB0;
-    color: white;
-}
-
-.action-item.cart:hover {
-    background: #1e4a76;
-}
-
-.account-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    color: inherit;
-    width: 100%;
-}
-
-.badge {
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 20px;
-    min-width: 18px;
-    text-align: center;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    min-width: 200px;
-    display: none;
-    z-index: 1000;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-    margin-top: 8px;
-    overflow: hidden;
-}
-
-.dropdown-menu.show {
-    display: block;
-    animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.dropdown-menu a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    color: #1f1f1f;
-    text-decoration: none;
-    font-size: 13px;
-    transition: background 0.2s;
-}
-
-.dropdown-menu a:hover {
-    background: #f8fafc;
-}
-
-.dropdown-menu hr {
-    margin: 4px 0;
-    border-color: #eef2f6;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .action-item span {
-        display: none;
-    }
-    
-    .action-item {
-        padding: 8px 12px;
-    }
-    
-    .dropdown-menu {
-        right: -20px;
-        min-width: 180px;
-    }
-}
-</style>
-
-<script>
-function toggleDropdown() {
-    const dropdown = document.getElementById('dropdownMenu');
-    dropdown.classList.toggle('show');
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const dropdown = document.getElementById('dropdownMenu');
-    const button = document.querySelector('.account-btn');
-    const accountItem = document.getElementById('accountDropdown');
-    
-    if (accountItem && !accountItem.contains(event.target)) {
-        dropdown.classList.remove('show');
-    }
-});
-
-// Prevent dropdown from closing when clicking inside
-document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
-    e.stopPropagation();
-});
-</script>
+                    <!-- Profile Dropdown - Now on the LEFT side -->
+                    <div class="action-item" id="accountDropdown">
+                        <button class="account-btn" id="accountBtn">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Account</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            {% if request.session.user_id %}
+                                {% if request.session.user_role == 'ADMIN' %}
+                                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                                    <a href="{% url 'admin_panel:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                                    <hr>
+                                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                                {% elif request.session.user_role == 'STAFF' %}
+                                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                                    <a href="{% url 'staff:dashboard_redirect' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                                    <a href="{% url 'staff:services_list' %}"><i class="fas fa-tasks"></i> Services</a>
+                                    <hr>
+                                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                                {% else %}
+                                    <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+                                    <a href="{% url 'orders:order_list' %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+                                    <a href="{% url 'store:my_bookings' %}"><i class="fas fa-tools"></i> My Bookings</a>
+                                    <a href="#"><i class="fas fa-heart"></i> Wishlist</a>
+                                    <hr>
+                                    <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                                <a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus"></i> Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Wishlist and Cart on the RIGHT side -->
+                    {% if request.session.user_role == "CUSTOMER" %}
+                    <div class="action-item">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist</span>
+                        <span class="badge wishlist-badge">0</span>
+                    </div>
+                    <a href="{% url 'orders:cart_detail' %}" class="action-item cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Cart</span>
+                        <span class="badge cart-badge">{{ cart_count|default:0 }}</span>
+                    </a>
+                    {% endif %}
+                </div>
 
                 <button class="mobile-toggle" id="mobileToggle">
                     <i class="fas fa-bars"></i>
@@ -269,7 +455,7 @@ document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
 
             <div class="mobile-menu" id="mobileMenu">
                 <a href="{% url 'store:product_list' %}">Products</a>
-                <a href="{% url 'core:home' %}#services">Services</a>
+                <a href="#services">Services</a>
                 <a href="#">Support</a>
                 <hr>
                 {% if not request.session.user_id %}
@@ -289,20 +475,20 @@ document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
     <nav class="category-nav">
         <div class="container">
             <ul class="category-nav-list">
-                <li><a href="{% url 'store:category' 'computers' %}"><i class="fas fa-desktop"></i> Computers</a></li>
-                <li><a href="{% url 'store:category' 'laptops' %}"><i class="fas fa-laptop"></i> Laptops</a></li>
-                <li><a href="{% url 'store:category' 'printers' %}"><i class="fas fa-print"></i> Printers</a></li>
-                <li><a href="{% url 'store:category' 'accessories' %}"><i class="fas fa-mouse"></i> Accessories</a></li>
-                <li><a href="{% url 'store:category' 'cctv' %}"><i class="fas fa-video"></i> CCTV</a></li>
-                <li><a href="{% url 'core:home' %}#services"><i class="fas fa-tools"></i> Services</a></li>
+                <li><a href="{% url 'store:product_list' %}?category=computers"><i class="fas fa-desktop"></i> Computers</a></li>
+                <li><a href="{% url 'store:product_list' %}?category=laptops"><i class="fas fa-laptop"></i> Laptops</a></li>
+                <li><a href="{% url 'store:product_list' %}?category=printers"><i class="fas fa-print"></i> Printers</a></li>
+                <li><a href="{% url 'store:product_list' %}?category=accessories"><i class="fas fa-mouse"></i> Accessories</a></li>
+                <li><a href="{% url 'store:product_list' %}?category=cctv"><i class="fas fa-video"></i> CCTV</a></li>
+                <li><a href="#services"><i class="fas fa-tools"></i> Services</a></li>
                 <li class="has-submenu">
                     <a href="#"><i class="fas fa-ellipsis-h"></i> More <i class="fas fa-chevron-down"></i></a>
                     <ul class="submenu">
-                        <li><a href="{% url 'store:category' 'ram-storage' %}">RAM & Storage</a></li>
-                        <li><a href="{% url 'store:category' 'processors' %}">Processors</a></li>
-                        <li><a href="{% url 'store:category' 'motherboards' %}">Motherboards</a></li>
-                        <li><a href="{% url 'store:category' 'networking' %}">Networking</a></li>
-                        <li><a href="{% url 'store:category' 'software' %}">Software</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=ram-storage">RAM & Storage</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=processors">Processors</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=motherboards">Motherboards</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=networking">Networking</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=software">Software</a></li>
                     </ul>
                 </li>
             </ul>
@@ -361,11 +547,11 @@ document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
                 <div class="footer-section">
                     <h4>Shop by Category</h4>
                     <ul>
-                        <li><a href="{% url 'store:category' 'computers' %}">Computers</a></li>
-                        <li><a href="{% url 'store:category' 'laptops' %}">Laptops</a></li>
-                        <li><a href="{% url 'store:category' 'printers' %}">Printers</a></li>
-                        <li><a href="{% url 'store:category' 'accessories' %}">Accessories</a></li>
-                        <li><a href="{% url 'store:category' 'cctv' %}">CCTV</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=computers">Computers</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=laptops">Laptops</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=printers">Printers</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=accessories">Accessories</a></li>
+                        <li><a href="{% url 'store:product_list' %}?category=cctv">CCTV</a></li>
                     </ul>
                 </div>
 
@@ -473,19 +659,38 @@ document.getElementById('dropdownMenu')?.addEventListener('click', function(e) {
             });
         }
 
+        // Account Dropdown functionality
+        (function() {
+            const accountBtn = document.getElementById('accountBtn');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const accountDropdown = document.getElementById('accountDropdown');
+            
+            if (accountBtn && dropdownMenu) {
+                accountBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!accountDropdown.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+                
+                dropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        })();
+
         // Cart sidebar
         var cartIcon = document.getElementById('cartIcon');
         var cartSidebar = document.getElementById('cartSidebar');
         var closeCart = document.getElementById('closeCart');
         var overlay = document.getElementById('overlay');
 
-        if (cartIcon && cartSidebar && closeCart && overlay) {
-            cartIcon.addEventListener('click', function() {
-                cartSidebar.classList.add('active');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-
+        if (cartSidebar && closeCart && overlay) {
             function closeCartSidebar() {
                 cartSidebar.classList.remove('active');
                 overlay.classList.remove('active');

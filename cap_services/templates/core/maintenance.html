@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 {% load static %}
+{% load core_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Under Maintenance - CAP Services</title>
     
     <!-- Fonts -->
@@ -29,32 +30,94 @@
             align-items: center;
             justify-content: center;
             color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,196,0,0.1);
+            border-radius: 50%;
+            top: -100px;
+            left: -100px;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,196,0,0.05);
+            border-radius: 50%;
+            bottom: -150px;
+            right: -150px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(50px, 50px); }
         }
         
         .maintenance-container {
             text-align: center;
             padding: 2rem;
             max-width: 600px;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .maintenance-icon {
             font-size: 80px;
             color: #ffc400;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
         }
         
         h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
             font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff, #ffc400);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
         
         h1 span {
             color: #ffc400;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
         }
         
-        p {
+        .subtitle {
             font-size: 1.125rem;
             color: rgba(255,255,255,0.8);
             margin-bottom: 2rem;
@@ -71,66 +134,11 @@
         }
         
         .progress-fill {
-            width: 65%;
+            width: 0%;
             height: 100%;
-            background: #ffc400;
+            background: linear-gradient(90deg, #ffc400, #ffed4e);
             border-radius: 3px;
-            animation: loading 1.5s ease-in-out infinite;
-        }
-        
-        .info-box {
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .info-box p {
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .contact {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-        
-        .contact a {
-            color: #ffc400;
-            text-decoration: none;
-            font-size: 0.875rem;
-        }
-        
-        .contact a:hover {
-            text-decoration: underline;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #ffc400;
-            color: #1E1E2F;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255,196,0,0.3);
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
+            animation: loading 3s ease-in-out infinite;
         }
         
         @keyframes loading {
@@ -138,11 +146,110 @@
                 width: 0%;
             }
             50% {
-                width: 65%;
+                width: 70%;
             }
             100% {
                 width: 100%;
             }
+        }
+        
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .info-box p {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .info-box i {
+            color: #ffc400;
+        }
+        
+        .contact {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .contact a {
+            color: #ffc400;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .contact a:hover {
+            color: #ffed4e;
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: #ffc400;
+            color: #1E1E2F;
+            text-decoration: none;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,196,0,0.3);
+            background: #ffed4e;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background: #ffc400;
+            color: #1E1E2F;
+            transform: translateY(-3px);
+        }
+        
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
         }
         
         @media (max-width: 768px) {
@@ -152,6 +259,34 @@
             
             .maintenance-icon {
                 font-size: 60px;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .contact {
+                gap: 1rem;
+                flex-direction: column;
+            }
+            
+            .info-box p {
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .maintenance-container {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.875rem;
             }
         }
     </style>
@@ -164,7 +299,7 @@
         
         <h1>We'll Be <span>Back Soon</span></h1>
         
-        <p>Our website is currently undergoing scheduled maintenance to serve you better. We apologize for any inconvenience.</p>
+        <p class="subtitle">Our website is currently undergoing scheduled maintenance to serve you better. We apologize for any inconvenience.</p>
         
         <div class="progress-bar">
             <div class="progress-fill"></div>
@@ -172,25 +307,61 @@
         
         <div class="info-box">
             <p><i class="fas fa-clock"></i> Estimated completion: 2-3 hours</p>
-            <p><i class="fas fa-calendar-alt"></i> Date: March 20, 2026</p>
+            <p><i class="fas fa-calendar-alt"></i> Date: {% now "F j, Y" %}</p>
             <div class="contact">
-                <a href="mailto:capservicers@gmail.com"><i class="fas fa-envelope"></i> capservicers@gmail.com</a>
-                <a href="tel:+917510158899"><i class="fas fa-phone"></i> 7510158899</a>
+                <a href="mailto:{{ site_email|default:'capservicers@gmail.com' }}"><i class="fas fa-envelope"></i> {{ site_email|default:'capservicers@gmail.com' }}</a>
+                <a href="tel:{{ site_phone|default:'+917510158899' }}"><i class="fas fa-phone-alt"></i> {{ site_phone|default:'7510158899' }}</a>
             </div>
         </div>
         
-        <a href="#" class="btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Check Again</a>
+        <a href="#" class="btn" onclick="checkStatus()">
+            <i class="fas fa-sync-alt"></i> Check Status
+        </a>
         
-        <div style="margin-top: 2rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-            <p>CAP Services © {% now "Y" %}</p>
+        <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        
+        <div class="footer-text">
+            <p>CAP Services © {% now "Y" %} | All rights reserved</p>
         </div>
     </div>
     
     <script>
-        // Auto refresh every 30 seconds
-        setTimeout(function() {
-            location.reload();
+        // Auto refresh every 30 seconds to check if maintenance is complete
+        let refreshInterval = setInterval(function() {
+            checkStatus();
         }, 30000);
+        
+        function checkStatus() {
+            fetch(window.location.href, {
+                method: 'HEAD',
+                cache: 'no-cache'
+            }).then(response => {
+                if (response.ok) {
+                    clearInterval(refreshInterval);
+                    window.location.reload();
+                }
+            }).catch(() => {
+                // Still in maintenance, do nothing
+            });
+        }
+        
+        // Update progress bar dynamically
+        let startTime = new Date();
+        let estimatedMinutes = 180; // 3 hours
+        
+        function updateProgress() {
+            let elapsed = (new Date() - startTime) / 1000 / 60; // minutes
+            let percent = Math.min((elapsed / estimatedMinutes) * 100, 99);
+            document.querySelector('.progress-fill').style.width = percent + '%';
+        }
+        
+        setInterval(updateProgress, 60000); // Update every minute
+        updateProgress();
     </script>
 </body>
 </html>

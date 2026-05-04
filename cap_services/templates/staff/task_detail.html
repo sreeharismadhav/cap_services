@@ -12,7 +12,7 @@
 <div class="card-custom">
     <div class="card-body-custom">
         <div class="task-header">
-            <div>
+            <div class="task-badges">
                 <span class="badge-custom badge-primary">{{ task.get_task_type_display }}</span>
                 <span class="task-priority priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
                 <span class="badge-custom badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
@@ -132,6 +132,19 @@
 </div>
 
 <style>
+.page-header {
+    margin-bottom: 24px;
+}
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.page-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
 .task-header {
     display: flex;
     justify-content: space-between;
@@ -139,6 +152,11 @@
     flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 20px;
+}
+.task-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 .details-grid {
     display: grid;
@@ -160,6 +178,85 @@ h4 {
     margin-bottom: 12px;
     color: #1f1f1f;
 }
+
+.badge-custom {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.badge-primary {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-assigned {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-accepted {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-in_progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+.task-priority {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.priority-high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.priority-medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+.priority-low {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.btn-custom {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+.btn-custom-primary {
+    background: #2A6FB0;
+    color: white;
+}
+.btn-custom-primary:hover {
+    background: #1e4a76;
+    transform: translateY(-2px);
+}
+.btn-custom-outline {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+.btn-custom-outline:hover {
+    background: #f8fafc;
+    border-color: #2A6FB0;
+    color: #2A6FB0;
+}
+
 .modal {
     position: fixed;
     top: 0;
@@ -219,13 +316,79 @@ h4 {
     font-size: 24px;
     cursor: pointer;
 }
+hr {
+    margin: 16px 0;
+    border-color: #eef2f6;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .details-grid {
-        grid-template-columns: 1fr;
+    .page-header h1 {
+        font-size: 20px;
     }
+    
     .task-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+    
+    .task-actions {
+        width: 100%;
+    }
+    
+    .task-actions form,
+    .task-actions button {
+        width: 100%;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 18px;
+    }
+    
+    .task-badges {
+        gap: 6px;
+    }
+    
+    .badge-custom, .task-priority {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    h4 {
+        font-size: 15px;
+    }
+    
+    .details-grid div {
+        font-size: 13px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .form-group label {
+        font-size: 12px;
+    }
+    
+    .form-control {
+        font-size: 13px;
+        padding: 8px 10px;
     }
 }
 </style>
@@ -233,9 +396,18 @@ h4 {
 <script>
 function showCompleteModal() {
     document.getElementById('completeModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 function closeModal() {
     document.getElementById('completeModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('completeModal');
+    if (event.target === modal) {
+        closeModal();
+    }
 }
 </script>
 {% endblock %}

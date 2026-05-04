@@ -51,7 +51,7 @@
                             <i class="fas fa-filter"></i> Apply Filters
                         </button>
                         {% if request.GET %}
-                            <a href="{% url 'store:product_list' %}{% if category %}category/{{ category.slug }}{% endif %}" class="btn-filter-clear">
+                            <a href="{% url 'store:product_list' %}{% if category %}?category={{ category.slug }}{% endif %}" class="btn-filter-clear">
                                 <i class="fas fa-times"></i> Clear All
                             </a>
                         {% endif %}
@@ -64,15 +64,15 @@
         <div class="col-lg-9">
             <!-- Breadcrumb -->
             {% if category %}
-            <nav class="breadcrumb-nav" style="margin-bottom: 1rem;">
-                <ol class="breadcrumb" style="display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; flex-wrap: wrap;">
-                    <li><a href="{% url 'store:product_list' %}" style="color: #64748b; text-decoration: none;">Home</a></li>
-                    <li><span style="color: #cbd5e1;">/</span></li>
+            <nav class="breadcrumb-nav">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'store:product_list' %}">Home</a></li>
+                    <li><span>/</span></li>
                     {% if category.parent %}
-                        <li><a href="{% url 'store:product_list' %}category/{{ category.parent.slug }}/" style="color: #64748b; text-decoration: none;">{{ category.parent.name }}</a></li>
-                        <li><span style="color: #cbd5e1;">/</span></li>
+                        <li><a href="{% url 'store:product_list' %}?category={{ category.parent.slug }}">{{ category.parent.name }}</a></li>
+                        <li><span>/</span></li>
                     {% endif %}
-                    <li><span style="color: #2A6FB0; font-weight: 500;">{{ category.name }}</span></li>
+                    <li class="active">{{ category.name }}</li>
                 </ol>
             </nav>
             {% endif %}
@@ -95,21 +95,16 @@
                 {% endif %}
             </div>
             
-            <!-- Subcategories Section (shown when parent category is selected) -->
+            <!-- Subcategories Section -->
             {% if category and category.children.exists %}
-            <div class="subcategories-section" style="margin-bottom: 2rem;">
-                <h3 style="font-size: 1rem; font-weight: 600; color: #1f1f1f; margin-bottom: 1rem;">
-                    <i class="fas fa-folder-open" style="color: #2A6FB0; margin-right: 0.5rem;"></i>
-                    Browse Subcategories
-                </h3>
-                <div class="subcategories-list" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            <div class="subcategories-section">
+                <h3><i class="fas fa-folder-open"></i> Browse Subcategories</h3>
+                <div class="subcategories-list">
                     {% for sub in category.children.all %}
-                        <a href="{% url 'store:product_list' %}category/{{ sub.slug }}/" 
-                           class="subcategory-chip" 
-                           style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.2rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 40px; text-decoration: none; transition: all 0.2s; color: #1f1f1f; font-size: 0.85rem;">
-                            <i class="fas fa-tag" style="color: #2A6FB0; font-size: 0.7rem;"></i>
+                        <a href="{% url 'store:product_list' %}?category={{ sub.slug }}" class="subcategory-chip">
+                            <i class="fas fa-tag"></i>
                             <span>{{ sub.name }}</span>
-                            <span style="background: #e2e8f0; padding: 0.1rem 0.4rem; border-radius: 20px; font-size: 0.7rem; color: #64748b;">{{ sub.products.count }}</span>
+                            <span class="subcategory-count">{{ sub.products.count }}</span>
                         </a>
                     {% endfor %}
                 </div>
@@ -228,7 +223,7 @@
                     </div>
                     <h3>No products found</h3>
                     <p>Try adjusting your filters or search terms</p>
-                    <a href="{% url 'store:product_list' %}{% if category %}category/{{ category.slug }}/{% endif %}" class="btn-empty-action">
+                    <a href="{% url 'store:product_list' %}{% if category %}?category={{ category.slug }}{% endif %}" class="btn-empty-action">
                         <i class="fas fa-sync-alt"></i> Clear All Filters
                     </a>
                 </div>
@@ -378,6 +373,10 @@
 .breadcrumb span {
     color: #cbd5e1;
 }
+.breadcrumb .active {
+    color: #2A6FB0;
+    font-weight: 500;
+}
 
 /* Products Header */
 .products-header {
@@ -415,6 +414,21 @@
     margin-bottom: 2rem;
     border: 1px solid #eef2f6;
 }
+.subcategories-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin-bottom: 1rem;
+}
+.subcategories-section h3 i {
+    color: #2A6FB0;
+    margin-right: 0.5rem;
+}
+.subcategories-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
 .subcategory-chip {
     display: inline-flex;
     align-items: center;
@@ -437,7 +451,14 @@
 .subcategory-chip:hover i {
     color: white !important;
 }
-.subcategory-chip:hover span:last-child {
+.subcategory-count {
+    background: #e2e8f0;
+    padding: 0.1rem 0.4rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+.subcategory-chip:hover .subcategory-count {
     background: rgba(255,255,255,0.2);
     color: white;
 }
@@ -652,6 +673,7 @@
     list-style: none;
     margin: 0;
     padding: 0;
+    flex-wrap: wrap;
 }
 .pagination li {
     display: inline-block;
@@ -727,6 +749,11 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 @media (max-width: 992px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -739,6 +766,7 @@
     }
     .products-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     .pagination-wrapper {
         flex-direction: column;
@@ -747,6 +775,28 @@
     .products-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+    .breadcrumb {
+        font-size: 0.75rem;
+    }
+    .subcategories-list {
+        gap: 0.5rem;
+    }
+    .subcategory-chip {
+        padding: 0.4rem 1rem;
+        font-size: 0.75rem;
+    }
+}
+@media (max-width: 576px) {
+    .products-title {
+        font-size: 1.25rem;
+    }
+    .pagination {
+        justify-content: center;
+    }
+    .page-link {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.75rem;
     }
 }
 </style>

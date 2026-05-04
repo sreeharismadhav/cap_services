@@ -42,6 +42,19 @@
 </div>
 
 <style>
+.page-header {
+    margin-bottom: 24px;
+}
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.page-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
 .service-list {
     display: flex;
     flex-direction: column;
@@ -54,9 +67,13 @@
     border-bottom: 1px solid #e2e8f0;
     flex-wrap: wrap;
     gap: 15px;
+    transition: all 0.2s;
 }
 .service-item:hover {
     background: #f8fafc;
+}
+.service-info {
+    flex: 1;
 }
 .service-info h4 {
     font-size: 16px;
@@ -73,10 +90,132 @@
     gap: 10px;
     flex-wrap: wrap;
 }
+.service-actions {
+    flex-shrink: 0;
+}
+.badge-custom {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.badge-primary {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-requested {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-assigned {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-in_progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+.badge-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.btn-custom {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.btn-custom-primary {
+    background: #2A6FB0;
+    color: white;
+}
+.btn-custom-primary:hover {
+    background: #1e4a76;
+    transform: translateY(-2px);
+}
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+}
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+.empty-state h4 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: #1f1f1f;
+}
+.empty-state p {
+    margin: 0;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 20px;
+    }
+    
     .service-item {
         flex-direction: column;
         align-items: flex-start;
+    }
+    
+    .service-actions {
+        width: 100%;
+    }
+    
+    .service-actions .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .service-info h4 {
+        font-size: 15px;
+    }
+    
+    .service-info p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 18px;
+    }
+    
+    .service-item {
+        padding: 16px;
+    }
+    
+    .service-header {
+        gap: 6px;
+    }
+    
+    .badge-custom {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    .service-info h4 {
+        font-size: 14px;
+    }
+    
+    .btn-custom {
+        padding: 8px 16px;
+        font-size: 12px;
     }
 }
 </style>

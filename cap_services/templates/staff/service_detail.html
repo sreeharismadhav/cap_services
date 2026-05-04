@@ -12,7 +12,7 @@
 <div class="card-custom">
     <div class="card-body-custom">
         <div class="service-header-info">
-            <div>
+            <div class="service-badges">
                 <span class="badge-custom badge-primary">{{ service.device_type }}</span>
                 <span class="badge-custom badge-{{ service.status|lower }}">{{ service.get_status_display }}</span>
             </div>
@@ -49,7 +49,7 @@
             <div class="info-grid">
                 <div><strong>Address:</strong> {{ service.address_line1 }}, {{ service.city }}, {{ service.state }} - {{ service.pincode }}</div>
                 {% if service.landmark %}<div><strong>Landmark:</strong> {{ service.landmark }}</div>{% endif %}
-                {% if service.map_link %}<div><strong>Map:</strong> <a href="{{ service.map_link }}" target="_blank">View Location</a></div>{% endif %}
+                {% if service.map_link %}<div><strong>Map:</strong> <a href="{{ service.map_link }}" target="_blank" class="map-link">View Location</a></div>{% endif %}
             </div>
         </div>
 
@@ -113,6 +113,19 @@
 </div>
 
 <style>
+.page-header {
+    margin-bottom: 24px;
+}
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.page-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
 .service-header-info {
     display: flex;
     justify-content: space-between;
@@ -121,6 +134,44 @@
     gap: 15px;
     margin-bottom: 20px;
 }
+.service-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge-custom {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.badge-primary {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-requested {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-assigned {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.badge-in_progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+.badge-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -130,17 +181,63 @@
 .full-width {
     grid-column: span 2;
 }
+
 .customer-info, .device-info, .address-info, .schedule-info, .notes-info, .cost-info {
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid #e2e8f0;
 }
+.customer-info:last-child, .device-info:last-child, .address-info:last-child, .schedule-info:last-child, .notes-info:last-child, .cost-info:last-child {
+    border-bottom: none;
+}
+
 h4 {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 12px;
     color: #1f1f1f;
 }
+
+.map-link {
+    color: #2A6FB0;
+    text-decoration: none;
+}
+.map-link:hover {
+    text-decoration: underline;
+}
+
+.btn-custom {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+.btn-custom-primary {
+    background: #2A6FB0;
+    color: white;
+}
+.btn-custom-primary:hover {
+    background: #1e4a76;
+    transform: translateY(-2px);
+}
+.btn-custom-outline {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+.btn-custom-outline:hover {
+    background: #f8fafc;
+    border-color: #2A6FB0;
+    color: #2A6FB0;
+}
+
 .modal {
     position: fixed;
     top: 0;
@@ -158,6 +255,8 @@ h4 {
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 .modal-header {
     display: flex;
@@ -198,12 +297,82 @@ h4 {
     font-size: 24px;
     cursor: pointer;
 }
+hr {
+    margin: 16px 0;
+    border-color: #eef2f6;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 20px;
+    }
+    
+    .service-header-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .service-actions {
+        width: 100%;
+    }
+    
+    .service-actions button {
+        width: 100%;
+    }
+    
     .info-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
+    
     .full-width {
         grid-column: span 1;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 18px;
+    }
+    
+    .service-badges {
+        gap: 6px;
+    }
+    
+    .badge-custom {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    h4 {
+        font-size: 15px;
+    }
+    
+    .info-grid div {
+        font-size: 13px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .form-group label {
+        font-size: 12px;
+    }
+    
+    .form-control {
+        font-size: 13px;
+        padding: 8px 10px;
     }
 }
 </style>
@@ -211,9 +380,18 @@ h4 {
 <script>
 function showUpdateModal() {
     document.getElementById('updateModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 function closeModal() {
     document.getElementById('updateModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('updateModal');
+    if (event.target === modal) {
+        closeModal();
+    }
 }
 </script>
 {% endblock %}

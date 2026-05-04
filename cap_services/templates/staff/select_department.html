@@ -91,5 +91,72 @@
 .dept-selection-card:hover .dept-select-btn {
     transform: translateX(5px);
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .page-header p {
+        font-size: 14px;
+    }
+    
+    .dept-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 16px;
+    }
+    
+    .dept-selection-card {
+        padding: 24px 20px;
+    }
+    
+    .dept-selection-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .dept-selection-icon i {
+        font-size: 30px;
+    }
+    
+    .dept-selection-card h3 {
+        font-size: 18px;
+    }
+    
+    .dept-selection-card p {
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .dept-select-btn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 20px;
+    }
+    
+    .dept-selection-card {
+        padding: 20px 16px;
+    }
+    
+    .dept-selection-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .dept-selection-icon i {
+        font-size: 26px;
+    }
+    
+    .dept-selection-card h3 {
+        font-size: 16px;
+    }
+}
 </style>
 {% endblock %}

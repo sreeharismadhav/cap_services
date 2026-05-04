@@ -70,6 +70,8 @@
     .product-image {
         height: 200px;
         overflow: hidden;
+        position: relative;
+        background: #f8fafc;
     }
     .product-image img {
         width: 100%;
@@ -103,7 +105,7 @@
         color: #ef4444;
     }
     
-    /* Breadcrumb - Horizontal Style */
+    /* Breadcrumb */
     .breadcrumb {
         background: transparent;
         padding: 0;
@@ -138,7 +140,7 @@
         font-size: 0.875rem;
     }
     
-    /* Quick View Overlay */
+    /* Product Quick View */
     .product-quick-view {
         position: absolute;
         bottom: -50px;
@@ -158,39 +160,104 @@
         font-weight: 500;
     }
     
-    /* Product Image Container */
-    .product-image {
-        position: relative;
-        height: 200px;
-        overflow: hidden;
-        background: #f8fafc;
+    /* Main Image */
+    .main-image img {
+        aspect-ratio: 1;
+        object-fit: cover;
+    }
+    
+    /* Rating Select */
+    .rating-select {
+        display: flex;
+        gap: 5px;
+    }
+    .star-label {
+        cursor: pointer;
+        font-size: 24px;
+        color: #cbd5e1;
+        transition: color 0.2s;
+    }
+    .star-label:hover {
+        color: #fbbf24;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .breadcrumb {
+            font-size: 0.75rem;
+        }
+        .display-6 {
+            font-size: 1.5rem;
+        }
+        .product-image {
+            height: 160px;
+        }
+        .review-card {
+            padding: 15px;
+        }
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+        }
+        .quantity-input {
+            width: 70px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .breadcrumb-item a,
+        .breadcrumb-item.active {
+            font-size: 0.7rem;
+        }
+        .display-6 {
+            font-size: 1.3rem;
+        }
+        .btn-primary, .btn-outline-secondary {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+        }
+        .product-card {
+            margin-bottom: 1rem;
+        }
+        .related-products .col-md-3 {
+            width: 50%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .related-products .col-md-3 {
+            width: 100%;
+        }
+        .product-image {
+            height: 200px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Breadcrumb - Horizontal, Not Dropdown -->
-    <nav aria-label="breadcrumb" class="mb-4">
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'core:home' %}"><i class="fas fa-home me-1"></i>Home</a></li>
             <li class="breadcrumb-item"><a href="{% url 'store:product_list' %}">Products</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'store:product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a></li>
             <li class="breadcrumb-item active">{{ product.name|truncatechars:40 }}</li>
         </ol>
     </nav>
 
     <div class="row g-4">
         <!-- Product Images -->
-        <div class="col-lg-6">
+        <div class="col-md-6">
             <div class="product-gallery">
                 <!-- Main Image -->
                 <div class="main-image mb-3">
                     {% with product.images.first as primary_image %}
                         {% if primary_image %}
-                            <img src="{{ primary_image.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-4 w-100 shadow-sm" id="mainImage" style="aspect-ratio: 1; object-fit: cover;">
+                            <img src="{{ primary_image.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-4 w-100 shadow-sm" id="mainImage">
                         {% else %}
-                            <img src="{% static 'images/placeholders/product-placeholder.jpg' %}" alt="{{ product.name }}" class="img-fluid rounded-4 w-100 shadow-sm" id="mainImage" style="aspect-ratio: 1; object-fit: cover;">
+                            <img src="{% static 'images/placeholders/product-placeholder.jpg' %}" alt="{{ product.name }}" class="img-fluid rounded-4 w-100 shadow-sm" id="mainImage">
                         {% endif %}
                     {% endwith %}
                 </div>
@@ -200,7 +267,7 @@
                     <div class="thumbnails d-flex gap-2 mt-3 flex-wrap">
                         {% for img in product.images.all %}
                             <div class="thumbnail" style="width: 80px; cursor: pointer;" data-image="{{ img.image.url }}">
-                                <img src="{{ img.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3 {% if forloop.first %}active{% endif %}" style="aspect-ratio: 1; object-fit: cover;">
+                                <img src="{{ img.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-3 {% if forloop.first %}active{% endif %}">
                             </div>
                         {% endfor %}
                     </div>
@@ -209,10 +276,10 @@
         </div>
         
         <!-- Product Info -->
-        <div class="col-lg-6">
+        <div class="col-md-6">
             <div class="mb-3">
-                <a href="{% url 'store:category' product.category.slug %}" class="badge bg-light text-dark py-2 px-3 rounded-pill text-decoration-none">{{ product.category.name }}</a>
-                {% if product.is_discounted %}
+                <a href="{% url 'store:product_list' %}?category={{ product.category.slug }}" class="badge bg-light text-dark py-2 px-3 rounded-pill text-decoration-none">{{ product.category.name }}</a>
+                {% if product.discount_percentage > 0 %}
                     <span class="badge bg-danger py-2 px-3 rounded-pill ms-2">-{{ product.discount_percentage }}% OFF</span>
                 {% endif %}
             </div>
@@ -239,8 +306,7 @@
             <div class="mb-4">
                 {% if product.discounted_price %}
                     <span class="display-6 fw-bold text-dark">₹{{ product.current_price|floatformat:2 }}</span>
-                    <span class="text-muted text-decoration-line-through ms-2">₹{{ product.price|floatformat:2 }}</span>
-                    <span class="text-success ms-2">Save ₹{{ product.price|subtract:product.current_price|floatformat:2 }}</span>
+                    <span class="text-muted text-decoration-line-through ms-2" style="text-decoration: line-through">₹{{ product.price|floatformat:2 }}</span>
                 {% else %}
                     <span class="display-6 fw-bold text-dark">₹{{ product.price|floatformat:2 }}</span>
                 {% endif %}
@@ -248,17 +314,19 @@
             
             <!-- Stock Status -->
             <div class="mb-4">
-                {% if product.inventory.available > 0 %}
-                    <span class="text-success"><i class="fas fa-check-circle me-1"></i> In Stock ({{ product.inventory.available }} available)</span>
-                {% else %}
-                    <span class="text-danger"><i class="fas fa-times-circle me-1"></i> Out of Stock</span>
-                {% endif %}
+                {% with product.inventory as inv %}
+                    {% if inv.quantity > 0 %}
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i> In Stock ({{ inv.available }} available)</span>
+                    {% else %}
+                        <span class="text-danger"><i class="fas fa-times-circle me-1"></i> Out of Stock</span>
+                    {% endif %}
+                {% endwith %}
             </div>
             
             <!-- Description -->
             <div class="mb-4">
                 <h5>Description</h5>
-                <p class="text-muted">{{ product.description|linebreaks }}</p>
+                <p class="text-muted">{{ product.description|linebreaks|truncatechars:300 }}</p>
             </div>
             
             <!-- Attributes -->
@@ -267,7 +335,7 @@
                     <h5>Specifications</h5>
                     <div class="row">
                         {% for attr in product.attributes.all %}
-                            <div class="col-md-6 mb-2">
+                            <div class="col-6 mb-2">
                                 <span class="fw-semibold">{{ attr.name }}:</span>
                                 <span class="text-muted">{{ attr.value }}</span>
                             </div>
@@ -281,15 +349,15 @@
                 <label class="fw-semibold mb-2">Quantity</label>
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <button class="quantity-btn" id="decreaseQty">-</button>
-                    <input type="number" id="quantity" value="1" min="1" max="{{ product.inventory.available }}" class="form-control quantity-input text-center">
+                    <input type="number" id="quantity" value="1" min="1" max="{% with product.inventory as inv %}{{ inv.available }}{% endwith %}" class="form-control quantity-input text-center">
                     <button class="quantity-btn" id="increaseQty">+</button>
                 </div>
                 
                 <div class="d-flex gap-3">
-                    <form method="post" action="{% url 'orders:cart_add' product.id %}">
+                    <form method="post" action="{% url 'orders:cart_add' product.id %}" style="flex: 1;">
                         {% csrf_token %}
-                        <input type="hidden" name="quantity" id="formQuantity">
-                        <button type="submit" class="btn btn-primary flex-grow-1 py-3">
+                        <input type="hidden" name="quantity" id="formQuantity" value="1">
+                        <button type="submit" class="btn btn-primary w-100 py-3">
                             <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                         </button>
                     </form>
@@ -311,11 +379,11 @@
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h4 class="mb-0">Customer Reviews</h4>
+                    <h4 class="mb-0">Customer Reviews ({{ product.review_count }})</h4>
                 </div>
                 <div class="card-body p-4">
                     <!-- Write Review Form -->
-                    {% if request.session.user_id %}
+                    {% if user.is_authenticated %}
                         {% if not user_review %}
                             <div class="mb-4 p-4 bg-light rounded-4">
                                 <h5 class="mb-3">Write a Review</h5>
@@ -324,10 +392,16 @@
                                     <div class="mb-3">
                                         <label class="form-label">Rating</label>
                                         <div class="rating-select">
-                                            {% for i in "54321"|make_list %}
-                                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" class="d-none">
-                                                <label for="star{{ i }}" class="star-label fs-4 me-1" style="cursor: pointer; color: #cbd5e1;">★</label>
-                                            {% endfor %}
+                                            <input type="radio" name="rating" value="5" id="star5" class="d-none">
+                                            <label for="star5" class="star-label">★</label>
+                                            <input type="radio" name="rating" value="4" id="star4" class="d-none">
+                                            <label for="star4" class="star-label">★</label>
+                                            <input type="radio" name="rating" value="3" id="star3" class="d-none">
+                                            <label for="star3" class="star-label">★</label>
+                                            <input type="radio" name="rating" value="2" id="star2" class="d-none">
+                                            <label for="star2" class="star-label">★</label>
+                                            <input type="radio" name="rating" value="1" id="star1" class="d-none">
+                                            <label for="star1" class="star-label">★</label>
                                         </div>
                                     </div>
                                     <div class="mb-3">
@@ -351,7 +425,7 @@
                         <div class="reviews-list">
                             {% for review in reviews %}
                                 <div class="review-card">
-                                    <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                                         <div>
                                             <div class="rating-star mb-1">
                                                 {% for i in "12345"|make_list %}
@@ -386,12 +460,12 @@
         <div class="row mt-5">
             <div class="col-12">
                 <h3 class="mb-4">You May Also Like</h3>
-                <div class="row g-4">
+                <div class="row g-4 related-products">
                     {% for related in related_products %}
                         <div class="col-md-3 col-sm-6">
                             <div class="product-card h-100">
                                 <a href="{% url 'store:product_detail' related.slug %}" class="text-decoration-none">
-                                    <div class="product-image position-relative">
+                                    <div class="product-image">
                                         {% with related.images.first as img %}
                                             {% if img %}
                                                 <img src="{{ img.image.url }}" alt="{{ related.name }}">
@@ -408,6 +482,9 @@
                                         <h6 class="product-title mb-2" style="font-size: 0.9rem; font-weight: 600;">{{ related.name|truncatechars:40 }}</h6>
                                         <div class="product-price">
                                             <span class="current-price fw-bold">₹{{ related.current_price|floatformat:2 }}</span>
+                                            {% if related.discounted_price %}
+                                                <span class="original-price text-muted text-decoration-line-through ms-2 small">₹{{ related.price|floatformat:2 }}</span>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </a>
@@ -424,7 +501,10 @@
     // Gallery thumbnail click
     document.querySelectorAll('.thumbnail').forEach(thumb => {
         thumb.addEventListener('click', function() {
-            document.getElementById('mainImage').src = this.dataset.image;
+            const mainImage = document.getElementById('mainImage');
+            if (mainImage) {
+                mainImage.src = this.getAttribute('data-image');
+            }
             document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
         });
@@ -434,19 +514,21 @@
     const qtyInput = document.getElementById('quantity');
     const decreaseBtn = document.getElementById('decreaseQty');
     const increaseBtn = document.getElementById('increaseQty');
-    const maxQty = {{ product.inventory.available }};
+    const maxQty = {% with product.inventory as inv %}{{ inv.available|default:0 }}{% endwith %};
     
-    if (decreaseBtn) {
+    if (decreaseBtn && qtyInput) {
         decreaseBtn.addEventListener('click', () => {
             let val = parseInt(qtyInput.value);
             if (val > 1) qtyInput.value = val - 1;
+            updateFormQuantity();
         });
     }
     
-    if (increaseBtn) {
+    if (increaseBtn && qtyInput) {
         increaseBtn.addEventListener('click', () => {
             let val = parseInt(qtyInput.value);
             if (val < maxQty) qtyInput.value = val + 1;
+            updateFormQuantity();
         });
     }
     
@@ -455,27 +537,39 @@
             let val = parseInt(qtyInput.value);
             if (isNaN(val) || val < 1) qtyInput.value = 1;
             if (val > maxQty) qtyInput.value = maxQty;
+            updateFormQuantity();
         });
-        
-        // Update hidden form input
+    }
+    
+    function updateFormQuantity() {
         const formQuantity = document.getElementById('formQuantity');
-        if (formQuantity) {
-            qtyInput.addEventListener('input', () => {
-                formQuantity.value = qtyInput.value;
-            });
+        if (formQuantity && qtyInput) {
             formQuantity.value = qtyInput.value;
         }
     }
     
     // Rating stars
-    document.querySelectorAll('.star-label').forEach((label, index) => {
+    const starLabels = document.querySelectorAll('.star-label');
+    const starRadios = document.querySelectorAll('input[name="rating"]');
+    
+    starLabels.forEach((label, index) => {
         label.addEventListener('click', function() {
-            const stars = document.querySelectorAll('.star-label');
-            stars.forEach((star, i) => {
-                if (i <= index) star.style.color = '#fbbf24';
-                else star.style.color = '#cbd5e1';
+            starRadios.forEach((radio, radioIndex) => {
+                if (radioIndex === (4 - index)) {
+                    radio.checked = true;
+                }
+            });
+            starLabels.forEach((star, i) => {
+                if (i <= index) {
+                    star.style.color = '#fbbf24';
+                } else {
+                    star.style.color = '#cbd5e1';
+                }
             });
         });
     });
+    
+    // Initialize form quantity
+    updateFormQuantity();
 </script>
 {% endblock %}

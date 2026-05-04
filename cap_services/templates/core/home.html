@@ -53,14 +53,8 @@
     }
 
     @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
     }
 
     .slide-content h1 {
@@ -768,6 +762,9 @@
         .category-card, .service-card {
             flex: 0 0 calc(33.333% - 16.67px);
         }
+        .products-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
     }
     @media (max-width: 992px) {
         .features-grid, .products-grid {
@@ -784,6 +781,13 @@
         }
         .slide-content h1 {
             font-size: 1.8rem;
+        }
+        .slide-content p {
+            font-size: 0.9rem;
+        }
+        .slide-buttons .btn-primary, .slide-buttons .btn-outline {
+            padding: 8px 20px;
+            font-size: 0.9rem;
         }
         .categories-slider-container, .services-slider-container {
             gap: 10px;
@@ -802,23 +806,47 @@
             flex: 0 0 calc(100% - 0px);
             padding: 20px 15px;
         }
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .products-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
         .countdown {
             flex-wrap: wrap;
+        }
+        .countdown-item {
+            min-width: 70px;
+            padding: 10px 15px;
+        }
+        .countdown-item span:first-child {
+            font-size: 1.5rem;
         }
         .form-group {
             flex-direction: column;
         }
+        .testimonial-card {
+            padding: 20px;
+        }
+        .offers-banner h2 {
+            font-size: 1.8rem;
+        }
     }
     @media (max-width: 576px) {
-        .features-grid, .products-grid {
-            grid-template-columns: 1fr;
-        }
         .categories-prev, .categories-next,
         .services-prev, .services-next {
             display: none;
         }
         .category-card, .service-card {
             flex: 0 0 100%;
+        }
+        .section-header h2 {
+            font-size: 1.5rem;
+        }
+        .product-card {
+            max-width: 100%;
         }
     }
 </style>
@@ -1305,7 +1333,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const noResultsMessage = document.getElementById('noResultsMessage');
     const resetSearchBtn = document.getElementById('resetSearchBtn');
 
-    if (categoriesSlider) {
+    if (categoriesSlider && categoriesCards.length > 0) {
         let categoriesCards = Array.from(document.querySelectorAll('.category-card'));
         let categoriesCurrentIndex = 0;
         let categoriesCardsPerView = getCategoriesPerView();
@@ -1424,6 +1452,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         createCategoriesDots();
         updateCategoriesSlider();
+        filterCategories('');
     }
 
     // ========== SERVICES SLIDER ==========

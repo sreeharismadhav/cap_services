@@ -133,7 +133,6 @@ h4:first-of-type {
     color: var(--primary-color);
 }
 
-/* Radio/Select styling */
 select.form-control {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
@@ -160,6 +159,31 @@ select.form-control {
     }
     .btn-custom {
         justify-content: center;
+        width: 100%;
+    }
+    .page-header h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-body-custom {
+        padding: 16px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-control, .form-select {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    h4 {
+        font-size: 16px;
+        margin: 20px 0 16px 0;
+    }
+    .btn-custom {
+        padding: 10px 20px;
+        font-size: 13px;
     }
 }
 </style>
@@ -275,18 +299,28 @@ select.form-control {
             serviceFields.style.display = 'block';
             complaintFields.style.display = 'none';
             // Make service fields required
-            document.querySelector('select[name="device_type"]').required = true;
-            document.querySelector('textarea[name="issue_description"]').required = true;
-            document.querySelector('input[name="subject"]').required = false;
-            document.querySelector('textarea[name="description"]').required = false;
+            const deviceType = document.querySelector('select[name="device_type"]');
+            const issueDesc = document.querySelector('textarea[name="issue_description"]');
+            const subject = document.querySelector('input[name="subject"]');
+            const complaintDesc = document.querySelector('textarea[name="description"]');
+            
+            if (deviceType) deviceType.required = true;
+            if (issueDesc) issueDesc.required = true;
+            if (subject) subject.required = false;
+            if (complaintDesc) complaintDesc.required = false;
         } else {
             serviceFields.style.display = 'none';
             complaintFields.style.display = 'block';
             // Make complaint fields required
-            document.querySelector('select[name="device_type"]').required = false;
-            document.querySelector('textarea[name="issue_description"]').required = false;
-            document.querySelector('input[name="subject"]').required = true;
-            document.querySelector('textarea[name="description"]').required = true;
+            const deviceType = document.querySelector('select[name="device_type"]');
+            const issueDesc = document.querySelector('textarea[name="issue_description"]');
+            const subject = document.querySelector('input[name="subject"]');
+            const complaintDesc = document.querySelector('textarea[name="description"]');
+            
+            if (deviceType) deviceType.required = false;
+            if (issueDesc) issueDesc.required = false;
+            if (subject) subject.required = true;
+            if (complaintDesc) complaintDesc.required = true;
         }
     }
     
